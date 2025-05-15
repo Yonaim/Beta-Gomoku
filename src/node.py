@@ -1,13 +1,13 @@
+from __future__ import annotations
 import numpy as np
 from .gamestate import GameState
-from __future__ import annotations
 from typing import Optional
 import math
 
 class Node:
 	state: GameState
-	move: tuple[int, int]
-	parent: Node
+	move: tuple[int, int] | None
+	parent: Node | None
 	children: np.ndarray
 	total_reward: float
 	n_visit: int
@@ -20,7 +20,6 @@ class Node:
 		self.children = np.array([], dtype=object)
 		self.total_reward: float = 0.0
 		self.n_visit: int = 0
-		self.heuristic
 
 	def expand(self) -> Node:
 		tried_moves = {child.move for child in self.children}

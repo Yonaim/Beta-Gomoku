@@ -1,7 +1,10 @@
-from .node import Node
-from .gamestate import GameState
+from __future__ import annotations
 import time
 import random
+import math
+from .node import Node
+from .gamestate import GameState
+
 
 class MCTS:
 	time_limit: float

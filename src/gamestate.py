@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 
 BOARD_LEGNTH = 15
@@ -24,11 +25,15 @@ class GameState:
 	def get_winner(self) -> int:
 		for y in range(BOARD_LEGNTH):
 			for x in range(BOARD_LEGNTH):
-				for i in range(4):
-					if (self._count_stone_in_dir(x, y, self.DIRS[i][0], self.DIRS[i][1]) >= WIN_STONE_CNT):
-						return self.board[x][y]
+				player = self.board[y][x]
+				if (player == EMPTY):
+					continue
+				for dx, dy in self.DIRS:
+					if self._count_stone_in_dir(x, y, dx, dy) >= WIN_STONE_CNT:
+						return player
+		return EMPTY
 
-	def is_terminate(self) -> bool:
+	def is_terminated(self) -> bool:
 		return self.get_winner() != 0 or len(self.get_legal_moves()) == 0
 
 	# internal -----------------------------------------------------------------
