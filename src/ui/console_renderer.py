@@ -1,5 +1,5 @@
 import numpy as np
-from ..constants import BLACK, WHITE
+from game.constants import BLACK, WHITE
 
 EMPTY_CHAR = "·"
 BLACK_CHAR = "●"

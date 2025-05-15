@@ -3,7 +3,7 @@ import time
 import random
 import math
 
-from src.settings import MAX_DEPTH, N_ROLLOUT
+from .settings import MAX_DEPTH, N_ROLLOUT
 from .node import Node
 from .gamestate import GameState
 from .heuristic import ClassicHeuristic, Heuristic

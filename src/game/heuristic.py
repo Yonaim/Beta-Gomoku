@@ -1,4 +1,4 @@
-from src.gamestate import GameState
+from .gamestate import GameState
 from .constants import WIN_STONE_CNT, EMPTY, BLACK, WHITE, DIRS
 from .settings import BOARD_LENGTH
 import numpy as np

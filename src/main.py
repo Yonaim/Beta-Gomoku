@@ -1,9 +1,8 @@
 from __future__ import annotations
-
-from .agent import Agent
-from .gamestate import GameState
-from .ui.console_renderer import ConsoleRenderer
-from .settings import TIME_LIMIT, N_ITERATION
+from game.agent import Agent
+from game.gamestate import GameState
+from game.settings import TIME_LIMIT, N_ITERATION
+from ui.console_renderer import ConsoleRenderer
 from typing import Callable
 
 PLAYER_1 = 1
@@ -58,8 +57,9 @@ def play_game(
         move = ctrl(state)
         try:
             state.apply_move(move)
+            print(f"놓은 위치: {int(move[1]), int(move[0])}")
         except ValueError:
-            if ctrl is human_controller: # human error
+            if ctrl is human_controller:  # human error
                 print("\n잘못된 수입니다. 재입력해주세요\n")
                 continue
             raise  # AI error
@@ -91,7 +91,7 @@ def play_ai_vs_ai() -> None:
 
 
 # ------------------------------------------------------------------ #
-#								main
+# 								main
 # ------------------------------------------------------------------ #
 
 
