@@ -1,16 +1,15 @@
 from __future__ import annotations
 import numpy as np
 import copy
-from .constants import WIN_STONE_CNT, EMPTY
-from .settings import BOARD_LEGNTH
+from .constants import WIN_STONE_CNT, EMPTY, DIRS
+from .settings import BOARD_LENGTH
 
 class GameState:
 	board: np.ndarray
 	current_player: int
-	DIRS = [(1,0), (0,1), (1,1), (1,-1)]
 
 	def __init__(self, current_player: int):
-		self.board = np.zeros((BOARD_LEGNTH,BOARD_LEGNTH), dtype=np.uint8)
+		self.board = np.zeros((BOARD_LENGTH,BOARD_LENGTH), dtype=np.uint8)
 		self.current_player = current_player
 	
 	def get_legal_moves(self) -> list[tuple[int, int]]:
@@ -23,12 +22,12 @@ class GameState:
 		self.board[move] = self.current_player
 
 	def get_winner(self) -> int:
-		for y in range(BOARD_LEGNTH):
-			for x in range(BOARD_LEGNTH):
+		for y in range(BOARD_LENGTH):
+			for x in range(BOARD_LENGTH):
 				player = self.board[y][x]
 				if (player == EMPTY):
 					continue
-				for dx, dy in self.DIRS:
+				for dx, dy in DIRS:
 					if self._count_stone_in_dir(x, y, dx, dy) >= WIN_STONE_CNT:
 						return player
 		return EMPTY
@@ -43,7 +42,7 @@ class GameState:
 		nx, ny =  x, y
 		cnt = 0
 
-		while (0 <= nx < BOARD_LEGNTH) and (0 <= ny < BOARD_LEGNTH) and self.board[ny, nx] == player:
+		while (0 <= nx < BOARD_LENGTH) and (0 <= ny < BOARD_LENGTH) and self.board[ny, nx] == player:
 			cnt += 1
 			nx += dx
 			ny += dy
