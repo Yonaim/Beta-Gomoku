@@ -3,7 +3,9 @@ import numpy as np
 from .gamestate import GameState
 from typing import Optional
 from numpy.typing import NDArray
-import math
+import random
+from .constants import EPSILON
+from .heuristic import ClassicHeuristic
 
 class Node:
 	state: GameState
@@ -22,28 +24,20 @@ class Node:
 		self.total_reward: float = 0.0
 		self.n_visit: int = 0
 
-	def expand(self) -> Node:
-		tried_moves = {child.move for child in self.children}
-		for move in self.state.get_legal_moves():
-			if move not in tried_moves:
-				child_state = self.state.clone()
-				child_state.apply_move(move)
-				child_node =  Node(child_state, move, self)
-				self.children = np.append(self.children, np.array([child_node], dtype=object))
-				return child_node
-		raise RuntimeError("expand() called on a fully-expanded node")
+	def expand(self) -> "Node":
+		tried = {c.move for c in self.children}
+		untried = [m for m in self.state.get_legal_moves() if m not in tried]
+		if not untried:
+			raise RuntimeError("expand on fully-expanded node")
 
-	# UCT = (mean of reward) + (c * sqrt(ln(parent.n_visit) / n_visit))
-	# Usually, c = sqrt(2) = 1.414...
-	def best_ucb1_child(self, c: float = 1.414) -> Node:
-		assert self.children.any()
-		log_n = math.log(self.n_visit)
+		move = random.choice(untried)
+		child_state = self.state.clone()
+		child_state.apply_move(move)
 
-		def ucb1(child: Node) -> float:
-			q = child.total_reward / child.n_visit
-			u = c * math.sqrt(log_n / child.n_visit)
-			return q + u
-		return max(self.children, key = ucb1)		
+		child = Node(child_state, move, self)
+		self.children = np.append(self.children, np.array([child], dtype=object))
+		return child
+
 
 	def is_fully_expanded(self) -> bool:
 		return len(self.children) == len(self.state.get_legal_moves())
