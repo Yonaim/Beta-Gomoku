@@ -30,12 +30,12 @@ class MCTS:
 			else:
 				node = node.best_ucb1_child()
 
-	# 1. until the node is terminate node
-	# 2. until max_depth + use heuristic 
-	def simulate(self, state: GameState) -> int:
+	# TODO: apply heuristic
+	def simulate(self, state: GameState) -> float:
 		cur = state
+
 		while not (state.is_terminate()):
-			move = random.choice(state.get_legal_moves())
+			move = random.choice(state.get_legal_moves()) # uniform random
 			cur.apply_move(move)
 
 	def backpropagate(self, node: Node, value: float):
