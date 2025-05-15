@@ -2,14 +2,15 @@ from __future__ import annotations
 import time
 import random
 import math
+
+from src.settings import MAX_DEPTH, N_ROLLOUT
 from .node import Node
 from .gamestate import GameState
 from .heuristic import ClassicHeuristic, Heuristic
 
-C = math.sqrt(2)	# exploration constant (tune if necessary)
-K = 50				# bias-decay constant
-MAX_DEPTH = 20
-N_ROLLOUT = 5
+C = math.sqrt(2)  # exploration constant (tune if necessary)
+K_PB = 50  # bias-decay constant
+K_BLEND = 3
 
 class MCTS:
     time_limit: float
@@ -22,14 +23,14 @@ class MCTS:
         self.heuristic = ClassicHeuristic()
 
     def run(self, state: GameState) -> tuple[int, int]:
-        root = Node(state) # root is the current game state
+        root = Node(state)  # root is the current game state
         start_time = time.time()
         i = 0
 
         while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
             selected = self.select(root)
             expanded = selected.expand()
-            reward = self.average_rollout(expanded.state, N_ROLLOUT)
+            reward = self.blended_evaluation(expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND)
             self.backpropagate(expanded, reward)
             i += 1
 
@@ -46,12 +47,15 @@ class MCTS:
                 return node.expand()
             node = node.best_child(self.pb_ucb1)
 
-    # TODO: Blending with heuristic
-    def average_rollout(self, state: GameState, n_rollout: int, max_depth : int = MAX_DEPTH) -> float:
-        total = 0.0
-        for _ in range(n_rollout):
-            total += self.rollout(state, max_depth)
-        return total / n_rollout
+    # average of rollout + heuristic
+    def blended_evaluation(
+        self, state: GameState, n_rollout: int, max_depth: int, k: float
+    ) -> float:
+        rollout_val = self.rollout_average(state, n_rollout, max_depth)
+        heuristic_val = self.heuristic.evaluate(state, state.current_player)
+
+        alpha = k / (k + n_rollout)
+        return (1 - alpha) * rollout_val + alpha * heuristic_val
 
     # To reduce stack frame, use iterative update and do not call a function
     def backpropagate(self, node: Node | None, reward: float):
@@ -64,7 +68,14 @@ class MCTS:
 
     # internal -----------------------------------------------------------------
 
-    def rollout(self, start: GameState, max_depth : int = MAX_DEPTH) -> float:
+    def rollout_average(
+        self, state: GameState, n_rollout: int, max_depth: int) -> float:
+        total = 0.0
+        for _ in range(n_rollout):
+            total += self.rollout(state, max_depth)
+        return total / n_rollout
+
+    def rollout(self, start: GameState, max_depth: int = MAX_DEPTH) -> float:
         state = start.clone()
         for _ in range(max_depth):
             if state.is_terminated():
@@ -80,13 +91,13 @@ class MCTS:
         return self.heuristic.evaluate(state, state.current_player)
 
     # progressive bias UCB1 (PB-UCB1)
-    def pb_ucb1(self, node: Node, k: float = K, c: float = C):
+    def pb_ucb1(self, node: Node, k: float = K_PB, c: float = C):
         if node.n_visit == 0:
             return float("inf")
 
         parent_n = node.parent.n_visit if node.parent else 1
-        q = node.total_reward / node.n_visit    # average reward
-        h = node.heuristic                      # heuristic
+        q = node.total_reward / node.n_visit  # average reward
+        h = node.heuristic  # heuristic
 
         alpha = k / (k + node.n_visit)
         exploitation = (
