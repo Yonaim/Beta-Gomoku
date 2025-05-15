@@ -47,3 +47,6 @@ class Node:
 			return True
 		else:
 			return False
+
+	def most_visited_child(self) -> Node:
+		return max(self.children, key=lambda ch: ch.n_visit)
