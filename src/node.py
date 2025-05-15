@@ -23,6 +23,7 @@ class Node:
 		self.children = np.array([], dtype=object)
 		self.total_reward: float = 0.0
 		self.n_visit: int = 0
+		self.heuristic = ClassicHeuristic().evaluate(state, state.current_player)
 
 	def expand(self) -> "Node":
 		tried = {c.move for c in self.children}
@@ -38,6 +39,17 @@ class Node:
 		self.children = np.append(self.children, np.array([child], dtype=object))
 		return child
 
+	def best_child(self, score_fn):
+		best_score = -float("inf")
+		best_nodes = []
+		for child in self.children:
+			score = score_fn(child)
+			if score > best_score + EPSILON:
+				best_score = score
+				best_nodes = [child]
+			elif abs(score - best_score) < EPSILON:
+				best_nodes.append(child)
+		return random.choice(best_nodes)
 
 	def is_fully_expanded(self) -> bool:
 		return len(self.children) == len(self.state.get_legal_moves())
