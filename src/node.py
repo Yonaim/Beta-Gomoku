@@ -2,13 +2,14 @@ from __future__ import annotations
 import numpy as np
 from .gamestate import GameState
 from typing import Optional
+from numpy.typing import NDArray
 import math
 
 class Node:
 	state: GameState
 	move: tuple[int, int] | None
 	parent: Node | None
-	children: np.ndarray
+	children: NDArray[np.object_]
 	total_reward: float
 	n_visit: int
 	heuristic: float
@@ -27,13 +28,15 @@ class Node:
 			if move not in tried_moves:
 				child_state = self.state.clone()
 				child_state.apply_move(move)
-				return Node(child_state, move, self)
+				child_node =  Node(child_state, move, self)
+				self.children = np.append(self.children, np.array([child_node], dtype=object))
+				return child_node
 		raise RuntimeError("expand() called on a fully-expanded node")
 
 	# UCT = (mean of reward) + (c * sqrt(ln(parent.n_visit) / n_visit))
 	# Usually, c = sqrt(2) = 1.414...
 	def best_ucb1_child(self, c: float = 1.414) -> Node:
-		assert self.children
+		assert self.children.any()
 		log_n = math.log(self.n_visit)
 
 		def ucb1(child: Node) -> float:
@@ -43,10 +46,7 @@ class Node:
 		return max(self.children, key = ucb1)		
 
 	def is_fully_expanded(self) -> bool:
-		if len(self.children == len(tuple(self.state.get_legal_moves()))):
-			return True
-		else:
-			return False
+		return len(self.children) == len(self.state.get_legal_moves())
 
 	def most_visited_child(self) -> Node:
 		return max(self.children, key=lambda ch: ch.n_visit)
