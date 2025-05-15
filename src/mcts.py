@@ -26,8 +26,8 @@ class MCTS:
 		while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
 			selected = self.select(root)
 			expanded = selected.expand()
-			value = self.average_rollout(expanded.state, N_ROLLOUT)
-			self.backpropagate(expanded, value)
+			reward = self.average_rollout(expanded.state, N_ROLLOUT)
+			self.backpropagate(expanded, reward)
 			i += 1
 
 		best_move = root.most_visited_child().move
@@ -65,8 +65,14 @@ class MCTS:
 		for _ in range(max_depth):
 			if state.is_terminated():
 				break
-			move = random.choice(state.get_legal_moves())
-			state.apply_move(move)
+			while True:
+				try:
+					move = random.choice(state.get_legal_moves())
+					state.apply_move(move)
+					break
+				except ValueError:
+					print("illegal move")
+					continue
 		return self.heuristic_eval(state)
 
 	def heuristic_eval(self, state: GameState) -> float:
