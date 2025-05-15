@@ -25,9 +25,9 @@ class Node:
 		tried_moves = {child.move for child in self.children}
 		for move in self.state.get_legal_moves():
 			if move not in tried_moves:
-				child_state = self.state.apply.move(move)
-				child_node = Node(child_state, move, self)
-				return child_node
+				child_state = self.state.clone()
+				child_state.apply_move(move)
+				return Node(child_state, move, self)
 		raise RuntimeError("expand() called on a fully-expanded node")
 
 	# UCT = (mean of reward) + (c * sqrt(ln(parent.n_visit) / n_visit))
