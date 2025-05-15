@@ -43,9 +43,9 @@ class MCTS:
 			cur.apply_move(move)
 
 	# To reduce stack frame, use iterative update and do not call a function
-	def backpropagate(self, node: Node, reward: float):
+	def backpropagate(self, node: Node | None, reward: float):
 		cur_reward = reward
-		while (node != None):
+		while node is not None:
 			node.n_visit += 1
 			node.total_reward += cur_reward
 			cur_reward = -cur_reward
