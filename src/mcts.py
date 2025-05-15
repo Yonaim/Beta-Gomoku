@@ -24,11 +24,11 @@ class MCTS:
 			i += 1
 
 	def select(self, node: Node) -> Node:
-		if not node.is_fully_expanded():
-			# expolration
-			return node.expand()
-		else:
-			return node.best_ucb1_child()
+		while (node.children.size != 0):
+			if not node.is_fully_expanded():
+				return node.expand()
+			else:
+				node = node.best_ucb1_child()
 
 	# 1. until the node is terminate node
 	# 2. until max_depth + use heuristic 
