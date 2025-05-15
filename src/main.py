@@ -1,9 +1,8 @@
 from .agent import Agent
 from .gamestate import GameState
 from .ui.console_renderer import ConsoleRenderer
+from .settings import TIME_LIMIT, N_ITERATION
 
-N_ITERATION = 1500
-TIME_LIMIT = 1
 PLAYER_1 = 1
 PLAYER_2 = 2
 

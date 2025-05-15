@@ -1,5 +1,5 @@
 import numpy as np
-from ..gamestate import BLACK, WHITE
+from ..constants import BLACK, WHITE
 
 EMPTY_CHAR = "·"
 BLACK_CHAR = "●"

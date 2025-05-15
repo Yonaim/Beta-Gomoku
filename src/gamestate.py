@@ -1,12 +1,8 @@
 from __future__ import annotations
 import numpy as np
 import copy
-
-BOARD_LEGNTH = 15
-WIN_STONE_CNT = 5
-EMPTY = 0
-BLACK = 1
-WHITE = 2
+from .constants import WIN_STONE_CNT, EMPTY
+from .settings import BOARD_LEGNTH
 
 class GameState:
 	board: np.ndarray
