@@ -5,28 +5,34 @@ import math
 from .node import Node
 from .gamestate import GameState
 
+C_DEFAULT = math.sqrt(2)	# exploration constant (tune if necessary)
+K_DEFAULT = 50				# bias-decay constant
 MAX_DEPTH_DEFAULT = 20
 N_ROLLOUT = 5
 
 class MCTS:
 	time_limit: float
-	max_iterations: int
+	n_iteration: int
 	
-	def __init__(self, time_limit: float, max_iterations: int):
+	def __init__(self, time_limit: float, n_iteration: int):
 		self.time_limit = time_limit
-		self.max_iterations = max_iterations
+		self.n_iteration = n_iteration
 
-	def run(self, state: GameState):
+	def run(self, state: GameState) -> tuple[int, int]:
 		root = Node(state) # root is the current game state
 		start_time = time.time()
 		i = 0
 
-		while (i < self.max_iterations) and (time.time() - start_time < self.time_limit):
+		while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
 			selected = self.select(root)
 			expanded = selected.expand()
 			value = self.average_rollout(expanded.state, N_ROLLOUT)
 			self.backpropagate(expanded, value)
 			i += 1
+
+		best_move = root.most_visited_child().move
+		assert best_move != None
+		return best_move
 
 	def select(self, node: Node) -> Node:
 		while True:
@@ -67,3 +73,14 @@ class MCTS:
 		# TODO: 구현하기
 		return random.uniform(-1, 1)
 
+	# progressive bias
+	# TODO: select에 적용
+	def pb_ucb1(self, node: Node, k: float = K_DEFAULT, c: float = C_DEFAULT):
+		parent_n = node.parent.n_visit if node.parent else 1
+		q = node.total_reward / node.n_visit
+		h = node.heuristic
+		
+		alpha = k / (k + node.n_visit)
+		exploitation = (1 - alpha) * q + alpha * h
+		exploration = c * math.sqrt(math.log(parent_n) / (1 + node.n_visit))		
+		return exploitation + exploration
