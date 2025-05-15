@@ -27,11 +27,12 @@ class MCTS:
 			i += 1
 
 	def select(self, node: Node) -> Node:
-		while (node.children.size != 0):
-			if not node.is_fully_expanded():
+		while True:
+			if node.state.is_terminated():
+				return node
+			elif not node.is_fully_expanded():
 				return node.expand()
-			else:
-				node = node.best_ucb1_child()
+			node = node.best_ucb1_child()
 
 	# TODO: apply heuristic
 	def simulate(self, state: GameState) -> float:
