@@ -3,6 +3,7 @@ import time
 import random
 import math
 
+from .constants import EMPTY
 from .settings import MAX_DEPTH, N_ROLLOUT
 from .node import Node
 from .gamestate import GameState
@@ -28,10 +29,15 @@ class MCTS:
         i = 0
 
         while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
-            selected = self.select(root)
-            expanded = selected.expand()
-            reward = self.blended_evaluation(expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND)
-            self.backpropagate(expanded, reward)
+            selected, is_terminal = self.select(root)
+            
+            if (is_terminal):
+                 reward = self.terminal_value(selected.state)
+                 self.backpropagate(selected, reward)
+            else:
+                 expanded = selected.expand()
+                 reward = self.blended_evaluation(expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND)
+                 self.backpropagate(expanded, reward)
             i += 1
 
         print(f"iteration 횟수: {i}")
@@ -39,12 +45,12 @@ class MCTS:
         assert best_move != None
         return best_move
 
-    def select(self, node: Node) -> Node:
+    def select(self, node: Node) -> tuple[Node, bool]:
         while True:
             if node.state.is_terminated():
-                return node
+                return node, True
             elif not node.is_fully_expanded():
-                return node.expand()
+                return node, False
             node = node.best_child(self.pb_ucb1)
 
     # average of rollout + heuristic
@@ -113,3 +119,9 @@ class MCTS:
         parent_n = node.parent.n_visit if node.parent else 1
         exploration = c * math.sqrt(math.log(parent_n) / node.n_visit)
         return q + exploration
+
+    def terminal_value(self, state: GameState) -> float:
+        winner = state.get_winner()
+        if winner == EMPTY:
+            return 0.0
+        return 1.0 if winner == state.current_player else -1.0
