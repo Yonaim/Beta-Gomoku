@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+import copy
 
 BOARD_LEGNTH = 15
 WIN_STONE_CNT = 5
@@ -52,3 +53,6 @@ class GameState:
 			ny = y + i * dy
 			i += 1
 		return cnt
+	
+	def clone(self) -> GameState:
+		return copy.deepcopy(self)
