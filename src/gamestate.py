@@ -18,7 +18,8 @@ class GameState:
 		self.current_player = current_player
 	
 	def get_legal_moves(self) -> list[tuple[int, int]]:
-		return np.argwhere(self.board == 0).tolist()
+		arr = np.argwhere(self.board == EMPTY)
+		return [tuple(pos) for pos in arr]
  
 	def apply_move(self, move: tuple[int, int]):
 		if self.board[move] != EMPTY:
