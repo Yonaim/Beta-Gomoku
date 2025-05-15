@@ -3,13 +3,13 @@ from .gamestate import GameState
 from .ui.console_renderer import ConsoleRenderer
 
 N_ITERATION = 1500
-TIME_LIMIT = 3.5
+TIME_LIMIT = 1
 PLAYER_1 = 1
 PLAYER_2 = 2
 
 def input_move() -> tuple[int, int]:
 	while True:
-		raw = input("당신의 차례입니다.\n좌표 (x, y)를 입력하세요: ").strip()
+		raw = input("좌표 (x, y)를 입력하세요: ").strip()
 		try:
 			x_s, y_s = raw.split()
 			x, y = int(x_s), int(y_s)
@@ -25,8 +25,8 @@ def main():
 
 	while not state.is_terminated():
 		renderer.draw(state.board)
-
 		if state.current_player == PLAYER_1:
+			print("당신의 차례입니다.")
 			while True:
 				try:
 					move = input_move()
@@ -36,9 +36,14 @@ def main():
 				except ValueError:
 					print("잘못된 수입니다. 재입력해주세요\n")
 		else:
+			print("AI의 차례입니다.")
+			print("AI가 다음 수를 생각 중입니다...")
 			move = ai.select_move(state)
 			state.apply_move(move)
-			print(f"AI의 수: {move}")
+			print(f"AI의 수: ({move[0]}, {move[1]})\n")
+			state.current_player = PLAYER_1
+
+	renderer.draw(state.board)
 
 	if (state.get_winner() == PLAYER_1):
 		print("당신의 승리입니다!")
