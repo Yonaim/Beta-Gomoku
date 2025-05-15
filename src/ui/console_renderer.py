@@ -1,8 +1,9 @@
 import numpy as np
+from ..gamestate import BLACK, WHITE
 
-EMPTY = "·"
-BLACK = "●"
-WHITE = "○"
+EMPTY_CHAR = "·"
+BLACK_CHAR = "●"
+WHITE_CHAR = "○"
 
 class ConsoleRenderer:
     def __init__(self, size: int = 15):
@@ -14,9 +15,9 @@ class ConsoleRenderer:
                     for x in range(self.size):
                         p = board[y, x]
                         row.append(
-                            BLACK if p == 1
-                            else WHITE if p == 2
-                            else EMPTY
+                            BLACK_CHAR if p == BLACK
+                            else WHITE_CHAR if p == WHITE
+                            else EMPTY_CHAR
                         )
                     print(" ".join(row))
         print()  # blank line
