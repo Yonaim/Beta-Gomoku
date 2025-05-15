@@ -14,7 +14,7 @@ class GameState:
 	DIRS = [(1,0), (0,1), (1,1), (1,-1)]
 
 	def __init__(self, current_player: int):
-		self.board = np.zeros((15,15), dtype=np.uint8)
+		self.board = np.zeros((BOARD_LEGNTH,BOARD_LEGNTH), dtype=np.uint8)
 		self.current_player = current_player
 	
 	def get_legal_moves(self) -> list[tuple[int, int]]:
@@ -46,13 +46,11 @@ class GameState:
 		player = self.board[y, x]
 		nx, ny =  x, y
 		cnt = 0
-		i = 0
 
-		while ((0 <= nx < BOARD_LEGNTH) and (0 <= ny < BOARD_LEGNTH) and self.board[ny, nx] == player):
+		while (0 <= nx < BOARD_LEGNTH) and (0 <= ny < BOARD_LEGNTH) and self.board[ny, nx] == player:
 			cnt += 1
-			nx = x + i * dx
-			ny = y + i * dy
-			i += 1
+			nx += dx
+			ny += dy
 		return cnt
 	
 	def clone(self) -> GameState:
