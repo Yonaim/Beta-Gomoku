@@ -25,7 +25,7 @@ Use the result of the playout to update information in the nodes on the path fro
 Determine how children are selected.
 
 - UCB (Upper Confidence Bound)
-- Progressive Bias: add heuristic to UCT
+- Progressive Bias: Heuristic added to UCT. At the beginning of the search, heuristic information is strongly reflected, weighing to rely more and more on rollout (or simulation results) as the navigation progresses
 
 ### Expansion strategy (in Expansion)
 Determines how actions are selected. Also known as Untried-action selector.
@@ -49,8 +49,8 @@ Determines when and how to perform value evaluation at the leat nodes instead of
 ### Backup strategy (in Backpropagation)
 Determines how the result of the simulation is applied to the nodes.
 
-(1) win-rate: A reward in [0, 1]
-(2) zero-sum value: A reward in [-1, 1] 
+1. win-rate: A reward in [0, 1]
+2. zero-sum value: A reward in [-1, 1] 
 
 To avoid a high probability of loss for the current player and favor safe, then (2) zero-sum value is the appropriate starategy.
 
