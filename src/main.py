@@ -13,7 +13,7 @@ def input_move() -> tuple[int, int]:
 		try:
 			x_s, y_s = raw.split()
 			x, y = int(x_s), int(y_s)
-			return x, y
+			return y, x
 		except Exception:
 			print("유효한 형식으로 입력하세요. 예: 2 3\n")
 
