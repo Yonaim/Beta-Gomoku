@@ -8,7 +8,7 @@ BLACK = 1
 WHITE = 2
 
 class GameState:
-	board: np.darray
+	board: np.ndarray
 	current_player: int
 	DIRS = [(1,0), (0,1), (1,1), (1,-1)]
 
