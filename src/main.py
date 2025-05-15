@@ -2,12 +2,14 @@ from .agent import Agent
 from .gamestate import GameState
 from .ui.console_renderer import ConsoleRenderer
 
+N_ITERATION = 1500
+TIME_LIMIT = 3.5
 PLAYER_1 = 1
 PLAYER_2 = 2
 
 def input_move() -> tuple[int, int]:
 	while True:
-		raw = input("좌표 (x, y)를 입력하세요: ").strip()
+		raw = input("당신의 차례입니다.\n좌표 (x, y)를 입력하세요: ").strip()
 		try:
 			x_s, y_s = raw.split()
 			x, y = int(x_s), int(y_s)
@@ -19,7 +21,7 @@ def main():
 	# 임시: player 우선 시작
 	state = GameState(current_player=PLAYER_1)
 	renderer = ConsoleRenderer()
-	ai = Agent(player_id=PLAYER_2, iterations=1500)
+	ai = Agent(player_id=PLAYER_2, time_limit=TIME_LIMIT, n_iteration=N_ITERATION)
 
 	while not state.is_terminated():
 		renderer.draw(state.board)
