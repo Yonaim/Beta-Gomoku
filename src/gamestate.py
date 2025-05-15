@@ -20,6 +20,8 @@ class GameState:
 		return np.argwhere(self.board == 0).tolist()
  
 	def apply_move(self, move: tuple[int, int]):
+		if self.board[move] != EMPTY:
+			raise ValueError
 		self.board[move] = self.current_player
 
 	def get_winner(self) -> int:
