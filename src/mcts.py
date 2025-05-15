@@ -38,9 +38,12 @@ class MCTS:
 			move = random.choice(state.get_legal_moves()) # uniform random
 			cur.apply_move(move)
 
-	def backpropagate(self, node: Node, value: float):
-		while (node != self.root):
-			# TODO: 노드의 값에 반영하기
+	# To reduce stack frame, use iterative update and do not call a function
+	def backpropagate(self, node: Node, reward: float):
+		cur_reward = reward
+		while (node != None):
+			node.n_visit += 1
+			node.total_reward += cur_reward
+			cur_reward = -cur_reward
 			node = node.parent
-		# TODO: 루트에 반영
-
+	
