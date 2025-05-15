@@ -5,6 +5,8 @@ import math
 from .node import Node
 from .gamestate import GameState
 
+MAX_DEPTH_DEFAULT = 20
+N_ROLLOUT = 5
 
 class MCTS:
 	time_limit: float
@@ -21,8 +23,8 @@ class MCTS:
 
 		while (i < self.max_iterations) and (time.time() - start_time < self.time_limit):
 			selected = self.select(root)
-			expanded = self.expand(selected)
-			value = self.simulate(expanded)
+			expanded = selected.expand()
+			value = self.average_rollout(expanded.state, N_ROLLOUT)
 			self.backpropagate(expanded, value)
 			i += 1
 
@@ -34,14 +36,13 @@ class MCTS:
 				return node.expand()
 			node = node.best_ucb1_child()
 
-	# TODO: apply heuristic
-	def simulate(self, state: GameState) -> float:
-		cur = state
-
-		while not (state.is_terminate()):
-			move = random.choice(state.get_legal_moves()) # uniform random
-			cur.apply_move(move)
-
+	# TODO: Blending with heuristic
+	def average_rollout(self, state: GameState, n_rollout: int, max_depth : int = MAX_DEPTH_DEFAULT) -> float:
+		total = 0.0
+		for _ in range(n_rollout):
+			total += self.rollout(state, max_depth)
+		return total / n_rollout
+	
 	# To reduce stack frame, use iterative update and do not call a function
 	def backpropagate(self, node: Node | None, reward: float):
 		cur_reward = reward
@@ -51,3 +52,18 @@ class MCTS:
 			cur_reward = -cur_reward
 			node = node.parent
 	
+	# internal -----------------------------------------------------------------
+
+	def rollout(self, start: GameState, max_depth : int = MAX_DEPTH_DEFAULT) -> float:
+		state = start.clone()
+		for _ in range(max_depth):
+			if state.is_terminated():
+				break
+			move = random.choice(state.get_legal_moves())
+			state.apply_move(move)
+		return self.heuristic_eval(state)
+
+	def heuristic_eval(self, state: GameState) -> float:
+		# TODO: 구현하기
+		return random.uniform(-1, 1)
+
