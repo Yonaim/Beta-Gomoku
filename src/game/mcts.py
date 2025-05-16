@@ -81,19 +81,17 @@ class MCTS:
             total += self.rollout(state, max_depth)
         return total / n_rollout
 
-    def rollout(self, start: GameState, max_depth: int = MAX_DEPTH) -> float:
+    def rollout(self, start: GameState, max_depth: int) -> float:
         state = start.clone()
         for _ in range(max_depth):
-            if state.is_terminated():
+            if state.is_terminal:
                 break
-            while True:
-                try:
-                    move = random.choice(state.get_legal_moves())
-                    state.apply_move(move)
-                    break
-                except ValueError:
-                    print("illegal move")
-                    continue
+            move = random.choice(state.get_legal_moves())
+            state.apply_move(move)
+            state.current_player = (
+                PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
+            )
+            state.print_board()
         return self.heuristic.evaluate(state, state.current_player)
 
     # progressive bias UCB1 (PB-UCB1)
