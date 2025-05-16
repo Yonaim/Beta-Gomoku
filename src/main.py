@@ -1,4 +1,6 @@
 from __future__ import annotations
+import sys
+import datetime
 
 from typing import Callable
 
@@ -110,6 +112,16 @@ def main() -> None:
         else:
             print("\n잘못된 입력입니다. 1 또는 2를 입력하세요.\n")
 
-
 if __name__ == "__main__":
-    main()
+    if "--profile" in sys.argv:
+        import cProfile, pstats
+        now = datetime.datetime.now()
+        path = f"./data/profile_{now.strftime('%Y%m%d_%H%M%S')}.txt"
+        with open(path, "w") as f:
+            prof = cProfile.Profile()
+            prof.runcall(main)
+            ps = pstats.Stats(prof, stream=f)
+            ps.sort_stats("cumulative")
+            ps.print_stats()
+    else:
+        main()
