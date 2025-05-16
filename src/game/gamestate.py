@@ -37,16 +37,7 @@ class GameState:
 
 	# internal -----------------------------------------------------------------
 
-	def _count_stone_in_dir(self, x: int, y: int, dx: int, dy: int):
-		player = self.board[y, x]
-		nx, ny =  x, y
-		cnt = 0
-
-		while (0 <= nx < BOARD_LENGTH) and (0 <= ny < BOARD_LENGTH) and self.board[ny, nx] == player:
-			cnt += 1
-			nx += dx
-			ny += dy
-		return cnt
-	
-	def clone(self) -> GameState:
-		return copy.deepcopy(self)
+	# for debug
+    def print_board(self) -> None:
+        renderer = console_renderer.ConsoleRenderer(BOARD_LENGTH)
+        renderer.draw(self.board)
