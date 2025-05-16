@@ -8,7 +8,7 @@ from constants import PLAYER_1, PLAYER_2
 from game.gamestate import GameState
 from game.heuristic import ClassicHeuristic, Heuristic
 from game.node import Node
-from settings import MAX_DEPTH, N_ROLLOUT
+from settings import DEBUG_MODE, MAX_DEPTH, N_ROLLOUT
 
 C = math.sqrt(2)  # exploration constant (tune if necessary)
 K_PB = 50  # bias-decay constant
@@ -95,7 +95,8 @@ class MCTS:
             state.current_player = (
                 PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
             )
-            state.print_board()
+            if DEBUG_MODE:
+                 state.print_board()
         return self.heuristic.evaluate(state, state.current_player)
 
     # progressive bias UCB1 (PB-UCB1)
