@@ -2,11 +2,9 @@ from __future__ import annotations
 from game.agent import Agent
 from game.gamestate import GameState
 from game.settings import TIME_LIMIT, N_ITERATION
+from game.constants import PLAYER_1, PLAYER_2
 from ui.console_renderer import ConsoleRenderer
 from typing import Callable
-
-PLAYER_1 = 1
-PLAYER_2 = 2
 
 # ------------------------------------------------------------------ #
 # 							Controller
@@ -14,7 +12,7 @@ PLAYER_2 = 2
 
 
 def human_controller(state: GameState) -> tuple[int, int]:
-    """사용자 입력을 받아 (y, x) 좌표 튜플을 반환."""
+    """사용자 입력을 받아 (y, x) 좌표 튜플을 반환"""
     while True:
         raw = input("좌표 (x y)를 입력하세요: ").strip()
         try:
@@ -26,7 +24,7 @@ def human_controller(state: GameState) -> tuple[int, int]:
 
 
 def make_ai_controller(player_id: int) -> Callable[[GameState], tuple[int, int]]:
-    """Agent 인스턴스를 감싸서 controller 형태로 반환."""
+    """Agent 인스턴스를 감싸서 controller 형태로 반환"""
     ai = Agent(player_id=player_id, time_limit=TIME_LIMIT, n_iteration=N_ITERATION)
 
     def _ai_controller(state: GameState) -> tuple[int, int]:
@@ -37,7 +35,7 @@ def make_ai_controller(player_id: int) -> Callable[[GameState], tuple[int, int]]
 
 
 # ------------------------------------------------------------------ #
-# 					    common game loop
+# 					    	game loop
 # ------------------------------------------------------------------ #
 
 
@@ -50,7 +48,7 @@ def play_game(
 
     controllers = {PLAYER_1: controller_p1, PLAYER_2: controller_p2}
 
-    while not state.is_terminated():
+    while not state.is_terminal:
         renderer.draw(state.board)
         ctrl = controllers[state.current_player]
 
@@ -68,7 +66,7 @@ def play_game(
         )
 
     renderer.draw(state.board)
-    winner = state.get_winner()
+    winner = state.terminal_winner
     if winner == PLAYER_1:
         print("플레이어 1 승리!")
     elif winner == PLAYER_2:

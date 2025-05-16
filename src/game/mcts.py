@@ -3,7 +3,7 @@ import time
 import random
 import math
 
-from .constants import EMPTY
+from .constants import PLAYER_1, PLAYER_2
 from .settings import MAX_DEPTH, N_ROLLOUT
 from .node import Node
 from .gamestate import GameState
@@ -30,14 +30,16 @@ class MCTS:
 
         while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
             selected, is_terminal = self.select(root)
-            
-            if (is_terminal):
-                 reward = self.terminal_value(selected.state)
-                 self.backpropagate(selected, reward)
+
+            if is_terminal:
+                reward = self.terminal_value(selected.state)
+                self.backpropagate(selected, reward)
             else:
-                 expanded = selected.expand()
-                 reward = self.blended_evaluation(expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND)
-                 self.backpropagate(expanded, reward)
+                expanded = selected.expand()
+                reward = self.blended_evaluation(
+                    expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND
+                )
+                self.backpropagate(expanded, reward)
             i += 1
 
         print(f"iteration 횟수: {i}")
@@ -47,7 +49,7 @@ class MCTS:
 
     def select(self, node: Node) -> tuple[Node, bool]:
         while True:
-            if node.state.is_terminated():
+            if node.state.is_terminal:
                 return node, True
             elif not node.is_fully_expanded():
                 return node, False
@@ -75,7 +77,8 @@ class MCTS:
     # internal -----------------------------------------------------------------
 
     def rollout_average(
-        self, state: GameState, n_rollout: int, max_depth: int) -> float:
+        self, state: GameState, n_rollout: int, max_depth: int
+    ) -> float:
         total = 0.0
         for _ in range(n_rollout):
             total += self.rollout(state, max_depth)
@@ -119,7 +122,8 @@ class MCTS:
         return q + exploration
 
     def terminal_value(self, state: GameState) -> float:
-        winner = state.get_winner()
-        if winner == EMPTY:
+        assert state.is_terminal == True
+        winner = state.terminal_winner
+        if winner == None:
             return 0.0
         return 1.0 if winner == state.current_player else -1.0
