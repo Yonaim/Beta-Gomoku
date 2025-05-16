@@ -1,10 +1,12 @@
 from __future__ import annotations
+
+from typing import Callable
+
+from settings import N_ITERATION, TIME_LIMIT
+from constants import PLAYER_1, PLAYER_2
+from ui.console_renderer import ConsoleRenderer
 from game.agent import Agent
 from game.gamestate import GameState
-from game.settings import TIME_LIMIT, N_ITERATION
-from game.constants import PLAYER_1, PLAYER_2
-from ui.console_renderer import ConsoleRenderer
-from typing import Callable
 
 # ------------------------------------------------------------------ #
 # 							Controller

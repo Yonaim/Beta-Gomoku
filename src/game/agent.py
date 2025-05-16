@@ -1,5 +1,6 @@
-from .mcts import MCTS
 from .gamestate import GameState
+from .mcts import MCTS
+
 
 class Agent:
 	player_id: int

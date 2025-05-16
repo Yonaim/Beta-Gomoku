@@ -1,13 +1,14 @@
 from __future__ import annotations
-import time
-import random
-import math
 
-from .constants import PLAYER_1, PLAYER_2
-from .settings import MAX_DEPTH, N_ROLLOUT
-from .node import Node
-from .gamestate import GameState
-from .heuristic import ClassicHeuristic, Heuristic
+import math
+import random
+import time
+
+from constants import PLAYER_1, PLAYER_2
+from game.gamestate import GameState
+from game.heuristic import ClassicHeuristic, Heuristic
+from game.node import Node
+from settings import MAX_DEPTH, N_ROLLOUT
 
 C = math.sqrt(2)  # exploration constant (tune if necessary)
 K_PB = 50  # bias-decay constant

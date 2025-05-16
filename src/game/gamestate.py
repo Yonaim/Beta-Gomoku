@@ -1,11 +1,14 @@
 from __future__ import annotations
-import numpy as np
-import copy
 
-from ui import console_renderer
-from .constants import WIN_STONE_CNT, EMPTY, DIRS, WHITE
-from .settings import BOARD_LENGTH
+import copy
 from typing import Optional
+
+import numpy as np
+
+from constants import DIRS, EMPTY, WIN_STONE_CNT
+from settings import BOARD_LENGTH
+from ui.console_renderer import ConsoleRenderer
+
 
 class GameState:
     board: np.ndarray
@@ -75,5 +78,5 @@ class GameState:
 	
 	# for debug
     def print_board(self) -> None:
-        renderer = console_renderer.ConsoleRenderer(BOARD_LENGTH)
+        renderer = ConsoleRenderer(BOARD_LENGTH)
         renderer.draw(self.board)

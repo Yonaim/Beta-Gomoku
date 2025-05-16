@@ -1,11 +1,14 @@
 from __future__ import annotations
-import numpy as np
-from .gamestate import GameState
-from typing import Optional
-from numpy.typing import NDArray
+
 import random
-from .constants import EPSILON
-from .heuristic import ClassicHeuristic
+from typing import Optional
+
+import numpy as np
+from numpy.typing import NDArray
+
+from constants import EPSILON
+from game.gamestate import GameState
+from game.heuristic import ClassicHeuristic
 
 class Node:
 	state: GameState

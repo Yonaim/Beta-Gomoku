@@ -1,6 +1,7 @@
 import numpy as np
-from game.constants import BLACK, WHITE
-from game.settings import BOARD_LENGTH
+
+from constants import BLACK, WHITE
+from settings import BOARD_LENGTH
 
 EMPTY_CHAR = "·"
 BLACK_CHAR = "●"

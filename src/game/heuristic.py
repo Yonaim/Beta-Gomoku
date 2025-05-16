@@ -1,7 +1,9 @@
-from .gamestate import GameState
-from .constants import WIN_STONE_CNT, EMPTY, BLACK, WHITE, DIRS
-from .settings import BOARD_LENGTH
 import numpy as np
+
+from constants import BLACK, DIRS, EMPTY, WHITE, WIN_STONE_CNT
+from game.gamestate import GameState
+from settings import BOARD_LENGTH
+
 
 class Heuristic:
     def evaluate(self, state: GameState, player: int) -> float:
