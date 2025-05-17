@@ -14,18 +14,14 @@ class ConsoleRenderer:
     def __init__(self, size: int = BOARD_LENGTH):
         self.size = size
 
-    def draw(self, occupy_bitset: int, color_bitset: int): 
+    def draw(self, occupy_bitset: int, color_bitset: int):
         for y in range(self.size):
             row = []
             for x in range(self.size):
                 occ = bit(occupy_bitset, x, y)
-                if occ is 1:
+                if occ is 0:
+                    row.append(EMPTY_CHAR)
                     continue
-                color = bit(color_bitset, x, y)
-                row.append(
-                    BLACK_CHAR
-                    if color == BLACK
-                    else WHITE_CHAR if color == WHITE else EMPTY_CHAR
-                )
+                row.append(BLACK_CHAR if bit(color_bitset, x, y) else WHITE_CHAR)
             print(" ".join(row))
         print()  # blank line
