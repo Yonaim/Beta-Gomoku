@@ -15,7 +15,7 @@ class Node:
     state: GameState
     move: tuple[int, int] | None
     parent: Node | None
-    children: NDArray[np.object_]
+    children: list[Node]
     total_reward: float
     n_visit: int
     heuristic: float
@@ -29,7 +29,7 @@ class Node:
         self.state = state
         self.move = move
         self.parent = parent
-        self.children = np.array([], dtype=object)
+        self.children: list[Node] = []
         self.total_reward: float = 0.0
         self.n_visit: int = 0
         self.heuristic = ClassicHeuristic().evaluate(state, state.current_player)
@@ -45,7 +45,7 @@ class Node:
         child_state.apply_move(move)
 
         child = Node(child_state, move, self)
-        self.children = np.append(self.children, np.array([child], dtype=object))
+        self.children.append(child)
         return child
 
     def best_child(self, score_fn):
