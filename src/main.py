@@ -53,7 +53,7 @@ def play_game(
     controllers = {PLAYER_1: controller_p1, PLAYER_2: controller_p2}
 
     while not state.is_terminal:
-        renderer.draw(state.board)
+        renderer.draw(state.occupy_bitset, state.color_bitset)
         ctrl = controllers[state.current_player]
 
         move = ctrl(state)
@@ -69,8 +69,8 @@ def play_game(
             PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
         )
 
-    renderer.draw(state.board)
-    winner = state.terminal_winner
+    renderer.draw(state.occupy_bitset, state.color_bitset)
+    winner = state.winner
     if winner == PLAYER_1:
         print("플레이어 1 승리!")
     elif winner == PLAYER_2:
@@ -112,9 +112,11 @@ def main() -> None:
         else:
             print("\n잘못된 입력입니다. 1 또는 2를 입력하세요.\n")
 
+
 if __name__ == "__main__":
     if "--profile" in sys.argv:
         import cProfile, pstats
+
         now = datetime.datetime.now()
         path = f"./data/profile_{now.strftime('%Y%m%d_%H%M%S')}.txt"
         with open(path, "w") as f:
