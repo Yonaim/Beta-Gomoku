@@ -42,7 +42,7 @@ def play_game(
         try:
             state.apply_move(move)
             if DEBUG_MODE:
-                print(f"놓은 위치: {int(move[1]), int(move[0])}")
+                print(f"놓은 위치: {int(move[0]), int(move[1])}")
         except ValueError:
             if ctrl is human_controller:  # human error
                 print("\n잘못된 수입니다. 재입력해주세요\n")
