@@ -1,6 +1,6 @@
 import numpy as np
 
-from constants import BLACK, DIRS, EMPTY, WHITE, WIN_STONE_CNT
+from constants import DIRS, WIN_STONE_CNT
 from game.gamestate import BOARD_N_BITS, GameState
 from settings import BOARD_LENGTH
 from src.game.bitset import bit, idx

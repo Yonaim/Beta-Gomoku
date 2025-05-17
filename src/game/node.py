@@ -3,9 +3,6 @@ from __future__ import annotations
 import random
 from typing import Optional
 
-import numpy as np
-from numpy.typing import NDArray
-
 from constants import EPSILON
 from game.gamestate import GameState
 from game.heuristic import ClassicHeuristic

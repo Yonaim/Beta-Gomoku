@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 from typing import Optional
 
-from constants import DIRS, BLACK, PLAYER_1, PLAYER_2, WIN_STONE_CNT
+from constants import DIRS, BLACK, WIN_STONE_CNT
 from settings import BOARD_LENGTH
 from src.game.bitset import bit, idx, set_bit
 from ui.console_renderer import ConsoleRenderer
