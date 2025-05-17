@@ -14,6 +14,7 @@ C = math.sqrt(2)  # exploration constant (tune if necessary)
 K_PB = 50  # bias-decay constant
 K_BLEND = 3
 
+
 class MCTS:
     time_limit: float
     n_iteration: int
@@ -43,7 +44,8 @@ class MCTS:
                 self.backpropagate(expanded, reward)
             i += 1
 
-        print(f"iteration 횟수: {i}")
+        if DEBUG_MODE:
+            print(f"iteration 횟수: {i}")
         best_move = root.most_visited_child().move
         assert best_move != None
         return best_move
@@ -90,13 +92,13 @@ class MCTS:
         for _ in range(max_depth):
             if state.is_terminal:
                 break
-            move = random.choice(state.get_legal_moves())
+            move = random.choice(state.legal_moves())
             state.apply_move(move)
             state.current_player = (
                 PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
             )
             if DEBUG_MODE:
-                 state.print_board()
+                state.print_board()
         return self.heuristic.evaluate(state, state.current_player)
 
     # progressive bias UCB1 (PB-UCB1)
@@ -125,7 +127,7 @@ class MCTS:
 
     def terminal_value(self, state: GameState) -> float:
         assert state.is_terminal == True
-        winner = state.terminal_winner
+        winner = state.winner
         if winner == None:
             return 0.0
         return 1.0 if winner == state.current_player else -1.0

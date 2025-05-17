@@ -4,7 +4,7 @@ import datetime
 
 from typing import Callable
 
-from settings import N_ITERATION, TIME_LIMIT
+from settings import DEBUG_MODE, N_ITERATION, TIME_LIMIT
 from constants import PLAYER_1, PLAYER_2
 from ui.console_renderer import ConsoleRenderer
 from game.agent import Agent
@@ -32,8 +32,10 @@ def make_ai_controller(player_id: int) -> Callable[[GameState], tuple[int, int]]
     ai = Agent(player_id=player_id, time_limit=TIME_LIMIT, n_iteration=N_ITERATION)
 
     def _ai_controller(state: GameState) -> tuple[int, int]:
-        print("AI가 다음 수를 생각 중입니다...")
-        return ai.select_move(state)
+        print(f"AI가 다음 수를 생각 중입니다... (제한시간: {TIME_LIMIT}초)")
+        move = ai.select_move(state)
+        print("AI가 자신의 수를 놓았습니다.")
+        return move
 
     return _ai_controller
 
@@ -53,13 +55,18 @@ def play_game(
     controllers = {PLAYER_1: controller_p1, PLAYER_2: controller_p2}
 
     while not state.is_terminal:
-        renderer.draw(state.board)
+        if state.current_player == PLAYER_1:
+            print("\n플레이어 1의 차례입니다.")
+        else:
+            print("\n플레이어 2의 차례입니다.")
+        renderer.draw(state.occupy_bitset, state.color_bitset)
         ctrl = controllers[state.current_player]
 
         move = ctrl(state)
         try:
             state.apply_move(move)
-            print(f"놓은 위치: {int(move[1]), int(move[0])}")
+            if DEBUG_MODE:
+               print(f"놓은 위치: {int(move[1]), int(move[0])}")
         except ValueError:
             if ctrl is human_controller:  # human error
                 print("\n잘못된 수입니다. 재입력해주세요\n")
@@ -69,8 +76,8 @@ def play_game(
             PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
         )
 
-    renderer.draw(state.board)
-    winner = state.terminal_winner
+    renderer.draw(state.occupy_bitset, state.color_bitset)
+    winner = state.winner
     if winner == PLAYER_1:
         print("플레이어 1 승리!")
     elif winner == PLAYER_2:
@@ -112,9 +119,11 @@ def main() -> None:
         else:
             print("\n잘못된 입력입니다. 1 또는 2를 입력하세요.\n")
 
+
 if __name__ == "__main__":
     if "--profile" in sys.argv:
         import cProfile, pstats
+
         now = datetime.datetime.now()
         path = f"./data/profile_{now.strftime('%Y%m%d_%H%M%S')}.txt"
         with open(path, "w") as f:
