@@ -49,7 +49,6 @@ class GameState:
             pass
         self.last_move = move
         self._check_terminal()
-        self.current_player = PLAYER_2 if self.current_player == PLAYER_1 else PLAYER_1
 
     def clone(self) -> GameState:
         return copy.deepcopy(self)
