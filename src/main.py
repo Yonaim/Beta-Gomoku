@@ -28,10 +28,13 @@ def human_controller(state: GameState) -> tuple[int, int]:
 
 
 def make_ai_controller(player_id: int) -> Callable[[GameState], tuple[int, int]]:
-    """Agent 인스턴스를 감싸서 controller 형태로 반환"""
-    ai = Agent(player_id=player_id, time_limit=TIME_LIMIT, n_iteration=N_ITERATION)
+    """
+    - stateless하게, 매 턴마다 Agent 인스턴스를 생성
+    - AI가 select한 좌표 튜플을 반환
+    """
 
     def _ai_controller(state: GameState) -> tuple[int, int]:
+        ai = Agent(player_id=player_id, time_limit=TIME_LIMIT, n_iteration=N_ITERATION)
         print(f"AI가 다음 수를 생각 중입니다... (제한시간: {TIME_LIMIT}초)")
         move = ai.select_move(state)
         print("AI가 자신의 수를 놓았습니다.")
@@ -66,7 +69,7 @@ def play_game(
         try:
             state.apply_move(move)
             if DEBUG_MODE:
-               print(f"놓은 위치: {int(move[1]), int(move[0])}")
+                print(f"놓은 위치: {int(move[1]), int(move[0])}")
         except ValueError:
             if ctrl is human_controller:  # human error
                 print("\n잘못된 수입니다. 재입력해주세요\n")
