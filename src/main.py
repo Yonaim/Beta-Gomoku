@@ -1,47 +1,20 @@
 from __future__ import annotations
+import argparse
+import multiprocessing
 import sys
 import datetime
 
 from typing import Callable
 
-from settings import DEBUG_MODE, N_ITERATION, TIME_LIMIT
+from settings import DEBUG_MODE
 from constants import PLAYER_1, PLAYER_2
-from ui.console_renderer import ConsoleRenderer
-from game.agent import Agent
+from ui.console_renderer import BLACK_CHAR, WHITE_CHAR, ConsoleRenderer
 from game.gamestate import GameState
 
-# ------------------------------------------------------------------ #
-# 							Controller
-# ------------------------------------------------------------------ #
-
-
-def human_controller(state: GameState) -> tuple[int, int]:
-    """사용자 입력을 받아 (y, x) 좌표 튜플을 반환"""
-    while True:
-        raw = input("좌표 (x y)를 입력하세요: ").strip()
-        try:
-            x_s, y_s = raw.split()
-            x, y = int(x_s), int(y_s)
-            return y, x  # board[row, col] = board[y, x]
-        except Exception:
-            print("유효한 형식으로 입력하세요. 예: 2 3\n")
-
-
-def make_ai_controller(player_id: int) -> Callable[[GameState], tuple[int, int]]:
-    """
-    - stateless하게, 매 턴마다 Agent 인스턴스를 생성
-    - AI가 select한 좌표 튜플을 반환
-    """
-
-    def _ai_controller(state: GameState) -> tuple[int, int]:
-        ai = Agent(player_id=player_id, time_limit=TIME_LIMIT, n_iteration=N_ITERATION)
-        print(f"AI가 다음 수를 생각 중입니다... (제한시간: {TIME_LIMIT}초)")
-        move = ai.select_move(state)
-        print("AI가 자신의 수를 놓았습니다.")
-        return move
-
-    return _ai_controller
-
+from controllers import (
+    human_controller,
+    make_ai_controller,
+)
 
 # ------------------------------------------------------------------ #
 # 					    	game loop
@@ -59,9 +32,9 @@ def play_game(
 
     while not state.is_terminal:
         if state.current_player == PLAYER_1:
-            print("\n플레이어 1의 차례입니다.")
+            print(f"\n플레이어 1({BLACK_CHAR})의 차례입니다.")
         else:
-            print("\n플레이어 2의 차례입니다.")
+            print(f"\n플레이어 2({WHITE_CHAR})의 차례입니다.")
         renderer.draw(state.occupy_bitset, state.color_bitset)
         ctrl = controllers[state.current_player]
 
@@ -69,7 +42,7 @@ def play_game(
         try:
             state.apply_move(move)
             if DEBUG_MODE:
-                print(f"놓은 위치: {int(move[1]), int(move[0])}")
+                print(f"놓은 위치: {int(move[0]), int(move[1])}")
         except ValueError:
             if ctrl is human_controller:  # human error
                 print("\n잘못된 수입니다. 재입력해주세요\n")
@@ -94,12 +67,40 @@ def play_game(
 # ------------------------------------------------------------------ #
 
 
-def play_human_vs_ai() -> None:
-    play_game(human_controller, make_ai_controller(PLAYER_2))
+def play_human_vs_ai(parallel_mode: str, n_workers: int) -> None:
+    play_game(human_controller, make_ai_controller(PLAYER_2, parallel_mode, n_workers))
 
 
-def play_ai_vs_ai() -> None:
-    play_game(make_ai_controller(PLAYER_1), make_ai_controller(PLAYER_2))
+def play_ai_vs_ai(parallel_mode: str, n_workers: int) -> None:
+    play_game(
+        make_ai_controller(PLAYER_1, parallel_mode, n_workers),
+        make_ai_controller(PLAYER_2, parallel_mode, n_workers),
+    )
+
+
+# ------------------------------------------------------------------ #
+#                           argument parser
+# ------------------------------------------------------------------ #
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Quarto 게임 병렬 모드 설정")
+    parser.add_argument(
+        "--parallel",
+        choices=["none", "tree", "root"],
+        default="none",
+        help="none (default), tree (tree parallel), root (root parallel)",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="The number of worker (core)",
+    )
+    args = parser.parse_args()
+    if args.parallel not in ("none", "tree", "root"):
+        parser.error("Wrong parallel mode")
+    return args
 
 
 # ------------------------------------------------------------------ #
@@ -108,16 +109,20 @@ def play_ai_vs_ai() -> None:
 
 
 def main() -> None:
+    args = parse_args()
+    if args.workers is None:
+        args.workers = multiprocessing.cpu_count()
+
     print("모드를 선택하세요:")
     print("1) 사람 vs AI")
     print("2) AI vs AI")
     while True:
         choice = input("모드 선택: ").strip()
         if choice == "1":
-            play_human_vs_ai()
+            play_human_vs_ai(parallel_mode=args.parallel, n_workers=args.workers)
             break
         elif choice == "2":
-            play_ai_vs_ai()
+            play_ai_vs_ai(parallel_mode=args.parallel, n_workers=args.workers)
             break
         else:
             print("\n잘못된 입력입니다. 1 또는 2를 입력하세요.\n")
