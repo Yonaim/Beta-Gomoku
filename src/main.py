@@ -131,6 +131,7 @@ def main() -> None:
 if __name__ == "__main__":
     if "--profile" in sys.argv:
         import cProfile, pstats
+        sys.argv.remove("--profile")
 
         now = datetime.datetime.now()
         path = f"./data/profile_{now.strftime('%Y%m%d_%H%M%S')}.txt"
