@@ -44,7 +44,8 @@ class MCTS:
                 self.backpropagate(expanded, reward)
             i += 1
 
-        print(f"iteration 횟수: {i}")
+        if DEBUG_MODE:
+            print(f"iteration 횟수: {i}")
         best_move = root.most_visited_child().move
         assert best_move != None
         return best_move
