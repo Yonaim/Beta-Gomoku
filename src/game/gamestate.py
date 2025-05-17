@@ -84,7 +84,7 @@ class GameState:
     def _check_terminal(self) -> Optional[int]:
         if self.last_move is None:
             return None
-        y, x = self.last_move
+        x, y = self.last_move
         for dx, dy in DIRS:
             count = (
                 self._count_one_dir(x, y, dx, dy)
