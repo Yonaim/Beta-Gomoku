@@ -32,9 +32,9 @@ def play_game(
 
     while not state.is_terminal:
         if state.current_player == PLAYER_1:
-            print(f"\n플레이어 1({BLACK_CHAR})의 차례입니다.")
+            print(f"\nPlayer 1 ({BLACK_CHAR})'s turn.")
         else:
-            print(f"\n플레이어 2({WHITE_CHAR})의 차례입니다.")
+            print(f"\nPlayer 2 ({WHITE_CHAR})'s turn.")
         renderer.draw(state.occupy_bitset, state.color_bitset)
         ctrl = controllers[state.current_player]
 
@@ -42,10 +42,10 @@ def play_game(
         try:
             state.apply_move(move)
             if DEBUG_MODE:
-                print(f"놓은 위치: {int(move[0]), int(move[1])}")
+                print(f"Placed at: {(int(move[0]), int(move[1]))}")
         except ValueError:
             if ctrl is human_controller:  # human error
-                print("\n잘못된 수입니다. 재입력해주세요\n")
+                print("\nInvalid move. Please enter again.\n")
                 continue
             raise  # AI error
         state.current_player = (
@@ -55,11 +55,11 @@ def play_game(
     renderer.draw(state.occupy_bitset, state.color_bitset)
     winner = state.winner
     if winner == PLAYER_1:
-        print("플레이어 1 승리!")
+        print("Player 1 wins!")
     elif winner == PLAYER_2:
-        print("플레이어 2 승리!")
+        print("Player 2 wins!")
     else:
-        print("무승부입니다.")
+        print("It's a draw.")
 
 
 # ------------------------------------------------------------------ #
@@ -113,11 +113,11 @@ def main() -> None:
     if args.workers is None:
         args.workers = multiprocessing.cpu_count()
 
-    print("모드를 선택하세요:")
-    print("1) 사람 vs AI")
+    print("Select mode:")
+    print("1) Human vs AI")
     print("2) AI vs AI")
     while True:
-        choice = input("모드 선택: ").strip()
+        choice = input("Select mode: ").strip()
         if choice == "1":
             play_human_vs_ai(parallel_mode=args.parallel, n_workers=args.workers)
             break
@@ -125,12 +125,13 @@ def main() -> None:
             play_ai_vs_ai(parallel_mode=args.parallel, n_workers=args.workers)
             break
         else:
-            print("\n잘못된 입력입니다. 1 또는 2를 입력하세요.\n")
+            print("\nInvalid input. Please enter 1 or 2.\n")
 
 
 if __name__ == "__main__":
     if "--profile" in sys.argv:
         import cProfile, pstats
+
         sys.argv.remove("--profile")
 
         now = datetime.datetime.now()
