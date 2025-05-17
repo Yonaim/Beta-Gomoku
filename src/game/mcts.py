@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import multiprocessing
 import random
 import time
 
@@ -15,7 +16,42 @@ K_PB = 50  # bias-decay constant
 K_BLEND = 3
 
 
-class MCTS:
+# n_visit만 쓸 경우 해당 값만 반환해도 무방
+# 우선 범용적으로 reward까지 함께 반환
+def _parallel_worker(state: GameState, n_iteration: int, time_limit: float):
+    tree = MCTree(time_limit, n_iteration)
+    tree.run(state)
+    return {
+        child.move: (child.n_visit, child.total_reward) for child in tree.root.children
+    }
+
+
+def run_root_parallel(
+    state: GameState, n_workers: int, n_iteration: int, time_limit: float
+) -> tuple[int, int]:
+
+    args = [(state.clone(), n_iteration, time_limit) for _ in range(n_workers)]
+    with multiprocessing.Pool(n_workers) as pool:
+        results = pool.starmap(_parallel_worker, args)
+
+    # cumulative = { key: move / value: (n_visit, total_reward) }
+    cum = {}
+    for result in results:
+        for move, (n, r) in result.items():
+            cum_v, cum_r = cum.get(move, (0, 0.0))
+            cum[move] = (cum_v + n, cum_r + r)
+
+    # Return move of 'the most visited node'
+    best_move, (best_v, best_r) = max(cum.items(), key=lambda item: item[1][0])
+    return best_move
+
+
+def run_tree_parallel() -> tuple[int, int]:
+    return (0, 0)
+
+
+class MCTree:
+    root: Node
     time_limit: float
     n_iteration: int
     heuristic: Heuristic
@@ -26,12 +62,12 @@ class MCTS:
         self.heuristic = ClassicHeuristic()
 
     def run(self, state: GameState) -> tuple[int, int]:
-        root = Node(state)  # root is the current game state
+        self.root = Node(state)  # root is the current game state
         start_time = time.time()
         i = 0
 
         while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
-            selected, is_terminal = self.select(root)
+            selected, is_terminal = self.select(self.root)
 
             if is_terminal:
                 reward = self.terminal_value(selected.state)
@@ -46,7 +82,7 @@ class MCTS:
 
         if DEBUG_MODE:
             print(f"iteration 횟수: {i}")
-        best_move = root.most_visited_child().move
+        best_move = self.root.most_visited_child().move
         assert best_move != None
         return best_move
 
@@ -56,7 +92,7 @@ class MCTS:
                 return node, True
             elif not node.is_fully_expanded():
                 return node, False
-            node = node.best_child(self.pb_ucb1)
+            node = node.best_child(self._pb_ucb1)
 
     # average of rollout + heuristic
     def blended_evaluation(
@@ -97,12 +133,13 @@ class MCTS:
             state.current_player = (
                 PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
             )
-            if DEBUG_MODE:
-                state.print_board()
+            # if DEBUG_MODE:
+            #     state.print_board()
         return self.heuristic.evaluate(state, state.current_player)
 
-    # progressive bias UCB1 (PB-UCB1)
-    def pb_ucb1(self, node: Node, k: float = K_PB, c: float = C):
+    @staticmethod
+    def _pb_ucb1(node: Node, k: float = K_PB, c: float = C):
+        """progressive bias UCB1 (PB-UCB1)"""
         if node.n_visit == 0:
             return float("inf")
 
@@ -117,7 +154,8 @@ class MCTS:
         exploration = c * math.sqrt(math.log(parent_n) / node.n_visit)
         return exploitation + exploration
 
-    def ucb1(self, node: Node, c=math.sqrt(2)):
+    @staticmethod
+    def _ucb1(node: Node, c=math.sqrt(2)):
         if node.n_visit == 0:
             return float("inf")
         q = node.total_reward / node.n_visit
