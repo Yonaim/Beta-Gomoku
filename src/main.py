@@ -53,6 +53,10 @@ def play_game(
     controllers = {PLAYER_1: controller_p1, PLAYER_2: controller_p2}
 
     while not state.is_terminal:
+        if state.current_player == PLAYER_1:
+            print("플레이어 1의 차례입니다.")
+        else:
+            print("플레이어 2의 차례입니다.")
         renderer.draw(state.occupy_bitset, state.color_bitset)
         ctrl = controllers[state.current_player]
 
