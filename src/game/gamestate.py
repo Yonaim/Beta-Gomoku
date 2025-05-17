@@ -74,7 +74,7 @@ class GameState:
             (0 <= nx < BOARD_LENGTH)
             and (0 <= ny < BOARD_LENGTH)
             and self._is_empty(nx, ny) is False
-            and bit(self.color_bitset, dx, dy) == player
+            and bit(self.color_bitset, nx, ny) == player
         ):
             cnt += 1
             nx += dx
