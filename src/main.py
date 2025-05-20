@@ -9,7 +9,7 @@ from typing import Callable
 
 from settings import DEBUG_MODE
 from constants import PLAYER_1, PLAYER_2
-from src.parallel.mode import ParallelMode  # Enum import
+from src.parallel.mode import ParallelMode
 
 from ui.console_renderer import BLACK_CHAR, WHITE_CHAR, ConsoleRenderer
 from game.gamestate import GameState
@@ -88,19 +88,20 @@ def play_ai_vs_ai(parallel_mode: ParallelMode, n_workers: int) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Quarto 게임 병렬 모드 설정")
+    parser = argparse.ArgumentParser(description="Parallel mode configuration")
     parser.add_argument(
         "--parallel",
-        type=ParallelMode,  # Enum 타입으로 바로 파싱
-        choices=list(ParallelMode),
-        default=ParallelMode.NONE,
+        type=str,
+        choices=[mode.value for mode in ParallelMode],
+        default=ParallelMode.NONE.value,
         help="none (default), tree (tree parallel), root (root parallel)",
     )
     parser.add_argument(
         "--workers",
         type=int,
         default=None,
-        help="The number of worker (core)",
+        metavar="N_WORKERS",
+        help="Number of workers",
     )
     return parser.parse_args()
 
