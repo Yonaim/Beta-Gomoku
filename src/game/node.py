@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import threading
 from typing import Optional
 
 from constants import EPSILON
@@ -30,6 +31,12 @@ class Node:
         self.total_reward: float = 0.0
         self.n_visit: int = 0
         self.heuristic = ClassicHeuristic().evaluate(state, state.current_player)
+        self._lock = threading.Lock()
+
+    def update(self, reward: float):
+        with self._lock:
+            self.n_visit += 1
+            self.total_reward += reward
 
     def expand(self) -> "Node":
         tried = {c.move for c in self.children}
@@ -42,7 +49,8 @@ class Node:
         child_state.apply_move(move)
 
         child = Node(child_state, move, self)
-        self.children.append(child)
+        with self._lock:
+            self.children.append(child)
         return child
 
     def best_child(self, score_fn):
