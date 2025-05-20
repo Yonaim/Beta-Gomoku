@@ -22,10 +22,11 @@ class ClassicHeuristic(Heuristic):
     
     # weight values of three cases: (open, half-open, blocked)
     WEIGHTS = {
-        5: (1e6, 1e6, 1e6),
-        4: (10000, 5000, 500),
-        3: (5000, 100, 50),
-        2: (100, 50, 5),
+        5: (10_000_000, 10_000_000, 10_000_000),
+        4: (100_000, 10_000, 1_000),
+        3: (5_000, 500, 50),
+        2: (300, 30, 5),
+        1: (1, 1, 1),
     }
 
     def evaluate(self, state: GameState, player: int) -> float:
