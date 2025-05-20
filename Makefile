@@ -1,6 +1,9 @@
 run:
 	PYTHONPATH=src python -m main
 
+help:
+	PYTHONPATH=src python -m main --help
+	
 root:
 	PYTHONPATH=src python -m main --parallel root
 
