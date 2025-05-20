@@ -8,7 +8,7 @@ from typing import Optional
 
 from constants import EPSILON
 from game.gamestate import GameState
-from game.heuristic import ClassicHeuristic
+from src.game.heuristic import heuristic_evaluate
 from src.settings import BOARD_LENGTH
 
 
@@ -37,25 +37,44 @@ class Node:
         self.children: list[Node] = []
         self.total_reward: float = 0.0
         self.n_visit: int = 0
-        self.heuristic = ClassicHeuristic().evaluate(state, state.current_player)
         self._lock = threading.Lock() if thread_safe else nullcontext()
+        self.heuristic = heuristic_evaluate(state, state.current_player)
 
     def update(self, reward: float):
         with self._lock:
             self.n_visit += 1
             self.total_reward += reward
 
-    def expand(self) -> "Node":
+    def expand(self, top_k: int = 3) -> "Node":
+        """
+        Create child node for untried move that has high heuristic score
+        (Select random in Top k nodes)
+        """
         tried = {c.move for c in self.children}
-        untried = [m for m in self.state.legal_moves(radius=BOARD_LENGTH) if m not in tried]
+        untried = [
+            m for m in self.state.legal_moves(radius=BOARD_LENGTH) if m not in tried
+        ]
         if not untried:
             raise RuntimeError("expand on fully-expanded node")
 
-        move = random.choice(untried)
+        # (1) Calculate heuristic score of each move
+        scored: list[tuple[float, tuple[int, int]]] = []
+        player = self.state.current_player
+        for mv in untried:
+            s = self.state.clone()
+            s.apply_move(mv)
+            score = heuristic_evaluate(s, player)
+            scored.append((score, mv))
+
+        # (2) Select random node in top k nodes (if k=1, best)
+        scored.sort(key=lambda x: x[0], reverse=True)
+        k = min(top_k, len(scored))
+        _, move = random.choice(scored[:k])
+
+        # (3) Create child node
         child_state = self.state.clone()
         child_state.apply_move(move)
-
-        child = Node(child_state, move, self)
+        child = Node(child_state, move, self, thread_safe=bool(self._lock))
         with self._lock:
             self.children.append(child)
         return child

@@ -6,9 +6,9 @@ import time
 
 from constants import PLAYER_1, PLAYER_2
 from game.gamestate import GameState
-from game.heuristic import ClassicHeuristic, Heuristic
 from game.node import Node
 from settings import BOARD_LENGTH, DEBUG_MODE, MAX_DEPTH, N_ROLLOUT
+from game.heuristic import heuristic_evaluate
 
 C = math.sqrt(2)  # exploration constant (tune if necessary)
 K_PB = 50  # bias-decay constant
@@ -19,7 +19,6 @@ class MCTree:
     root: Node
     time_limit: float
     n_iteration: int
-    heuristic: Heuristic
     thread_safe: bool
 
     def __init__(
@@ -27,7 +26,6 @@ class MCTree:
     ):
         self.time_limit = time_limit
         self.n_iteration = n_iteration
-        self.heuristic = ClassicHeuristic()
         self.thread_safe = thread_safe
 
     def run_single_thread(self, state: GameState) -> tuple[int, int]:
@@ -52,7 +50,7 @@ class MCTree:
             reward = self._terminal_value(selected.state)
             self.backpropagate(selected, reward)
         else:
-            expanded = selected.expand()
+            expanded = selected.expand(top_k=5)
             reward = self.blended_evaluation(
                 expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND
             )
@@ -71,7 +69,7 @@ class MCTree:
         self, state: GameState, n_rollout: int, max_depth: int, k: float
     ) -> float:
         rollout_val = self.rollout_average(state, n_rollout, max_depth)
-        heuristic_val = self.heuristic.evaluate(state, state.current_player)
+        heuristic_val = heuristic_evaluate(state, state.current_player)
 
         if abs(rollout_val) > 1e8:
             return rollout_val
@@ -111,10 +109,10 @@ class MCTree:
             state.apply_move(random.choice(moves))
             state.current_player = (
                 PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
-        )
+            )
         # if DEBUG_MODE:
         #     state.print_board()
-        return self.heuristic.evaluate(state, state.current_player)
+        return heuristic_evaluate(state, state.current_player)
 
     @staticmethod
     def _pb_ucb1(node: Node, k: float = K_PB, c: float = C):

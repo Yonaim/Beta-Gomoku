@@ -36,10 +36,12 @@ class Agent:
     def select_move(self, state: GameState) -> tuple[int, int]:
         StrategyCls = PARALLEL_MODE_MAP[self.parallel_mode]
 
+        # single thread
         if StrategyCls is None:
             tree = MCTree(self.time_limit, self.n_iteration, thread_safe=False)
             return tree.run_single_thread(state)
 
+        # multi-thread (root / tree)
         strategy = StrategyCls(
             n_workers=self.n_workers,
             n_iteration=self.n_iteration,
