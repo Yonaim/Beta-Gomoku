@@ -141,7 +141,7 @@ class MCTree:
     def backpropagate(self, node: Node | None, reward: float):
         cur_reward = reward
         while node is not None:
-            node.update(reward)
+            node.update(cur_reward)
             cur_reward = -cur_reward
             node = node.parent
 
