@@ -1,6 +1,6 @@
 from src.parallel.strategy_base import StrategyBase
 from src.game.gamestate import GameState
-from src.game.mcts import MCTree
+from src.game.mctree import MCTree
 
 
 def parallel_mcts(

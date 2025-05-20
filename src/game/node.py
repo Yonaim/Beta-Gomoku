@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 import random
 import threading
 from typing import Optional
+
 
 from constants import EPSILON
 from game.gamestate import GameState
@@ -17,12 +19,15 @@ class Node:
     total_reward: float
     n_visit: int
     heuristic: float
+    thread_safe: bool
 
     def __init__(
         self,
         state: GameState,
-        move = (-1, -1),
+        move=(-1, -1),
         parent: Optional[Node] = None,
+        *,
+        thread_safe: bool = False,
     ):
         if parent:
             self.move = move
@@ -32,7 +37,7 @@ class Node:
         self.total_reward: float = 0.0
         self.n_visit: int = 0
         self.heuristic = ClassicHeuristic().evaluate(state, state.current_player)
-        self._lock = threading.Lock()
+        self._lock = threading.Lock() if thread_safe else nullcontext()
 
     def update(self, reward: float):
         with self._lock:

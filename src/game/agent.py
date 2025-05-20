@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from game.gamestate import GameState
 from parallel.runner import parallel_mcts
-from src.game.mcts import MCTree
+from src.game.mctree import MCTree
 from src.parallel.strategy_root import StrategyRoot
 from src.parallel.strategy_tree import StrategyTree
 from src.parallel.mode import ParallelMode
@@ -33,17 +33,17 @@ class Agent:
         if self.parallel_mode not in PARALLEL_MODE_MAP:
             raise ValueError(f"unknown parallel_mode: {parallel_mode}")
 
-
     def select_move(self, state: GameState) -> tuple[int, int]:
         StrategyCls = PARALLEL_MODE_MAP[self.parallel_mode]
 
         if StrategyCls is None:
-            tree = MCTree(self.time_limit, self.n_iteration)
+            tree = MCTree(self.time_limit, self.n_iteration, thread_safe=False)
             return tree.run_single_thread(state)
 
         strategy = StrategyCls(
             n_workers=self.n_workers,
             n_iteration=self.n_iteration,
             time_limit=self.time_limit,
+            thread_safe = True
         )
         return parallel_mcts(state, strategy)
