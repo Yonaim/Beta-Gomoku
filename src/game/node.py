@@ -11,7 +11,7 @@ from game.heuristic import ClassicHeuristic
 
 class Node:
     state: GameState
-    move: tuple[int, int] | None
+    move: tuple[int, int]
     parent: Node | None
     children: list[Node]
     total_reward: float
@@ -21,11 +21,12 @@ class Node:
     def __init__(
         self,
         state: GameState,
-        move: Optional[tuple[int, int]] = None,
+        move = (-1, -1),
         parent: Optional[Node] = None,
     ):
+        if parent:
+            self.move = move
         self.state = state
-        self.move = move
         self.parent = parent
         self.children: list[Node] = []
         self.total_reward: float = 0.0

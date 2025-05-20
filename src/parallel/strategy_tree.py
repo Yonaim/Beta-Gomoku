@@ -29,5 +29,4 @@ class StrategyTree(StrategyBase):
 
     def best_move(self, tree: MCTree) -> tuple[int, int]:
         move = tree.root.most_visited_child().move
-        assert move != None
         return move
