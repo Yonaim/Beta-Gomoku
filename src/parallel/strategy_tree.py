@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 from src.game.gamestate import GameState
-from src.game.mcts import MCTree
+from src.game.mctree import MCTree
 from src.game.node import Node
 from .strategy_base import StrategyBase
 

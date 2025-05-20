@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
     from game.gamestate import GameState
-    from game.mcts import MCTree
+    from game.mctree import MCTree
 
 
 class StrategyBase(ABC):

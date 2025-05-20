@@ -1,7 +1,7 @@
 import multiprocessing as mp
 
 from src.game.gamestate import GameState
-from src.game.mcts import MCTree
+from src.game.mctree import MCTree
 from .strategy_base import StrategyBase
 
 

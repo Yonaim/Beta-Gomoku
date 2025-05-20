@@ -20,14 +20,18 @@ class MCTree:
     time_limit: float
     n_iteration: int
     heuristic: Heuristic
+    thread_safe: bool
 
-    def __init__(self, time_limit: float, n_iteration: int):
+    def __init__(
+        self, time_limit: float, n_iteration: int, *, thread_safe: bool = False
+    ):
         self.time_limit = time_limit
         self.n_iteration = n_iteration
         self.heuristic = ClassicHeuristic()
+        self.thread_safe = thread_safe
 
     def run_single_thread(self, state: GameState) -> tuple[int, int]:
-        self.root = Node(state)
+        self.root = Node(state, thread_safe=self.thread_safe)
         start = time.time()
         i = 0
 
@@ -45,7 +49,7 @@ class MCTree:
     def do_iteration(self):
         selected, is_terminal = self.select(self.root)
         if is_terminal:
-            reward = self.terminal_value(selected.state)
+            reward = self._terminal_value(selected.state)
             self.backpropagate(selected, reward)
         else:
             expanded = selected.expand()
@@ -54,7 +58,7 @@ class MCTree:
             )
             self.backpropagate(expanded, reward)
 
-    def select(self, node: Node) -> tuple[Node, bool]:
+    def select(self, node: Node) -> tuple[Node, bool]:  # [selected Node, is_terminal]
         while True:
             if node.state.is_terminal:
                 return node, True
@@ -130,9 +134,10 @@ class MCTree:
         exploration = c * math.sqrt(math.log(parent_n) / node.n_visit)
         return q + exploration
 
-    def terminal_value(self, state: GameState) -> float:
+    @staticmethod
+    def _terminal_value(state: GameState) -> float:
         assert state.is_terminal == True
         winner = state.winner
-        if winner == None:
+        if winner == -1:
             return 0.0
         return 1.0 if winner == state.current_player else -1.0
