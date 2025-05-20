@@ -15,17 +15,17 @@ class GameState:
     occupy_bitset: int
     color_bitset: int
     current_player: int
-    last_move: tuple[int, int] | None
+    last_move: tuple[int, int]
     is_terminal: bool
-    winner: int | None
+    winner: int
 
     def __init__(self, current_player: int):
         self.color_bitset = 0
         self.occupy_bitset = 0
         self.current_player = current_player
-        self.last_move = None
+        self.last_move = (-1, -1)
         self.is_terminal = False
-        self.winner = None
+        self.winner = -1
 
     # --------------------------------------------------------------------- #
     #                   			interface                               #
@@ -96,7 +96,6 @@ class GameState:
                 self.winner = self.current_player
         if self.occupy_bitset.bit_count() == BOARD_N_BITS:
             self.is_terminal = True
-            self.winner = None
 
     # occupy bit = 1이면 False, 0이면 True
     def _is_empty(self, x, y):
