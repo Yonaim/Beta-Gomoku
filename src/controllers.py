@@ -1,6 +1,7 @@
 from typing import Callable
 from src.game.agent import Agent
 from src.game.gamestate import GameState
+from src.parallel.mode import ParallelMode
 from src.settings import N_ITERATION, TIME_LIMIT
 
 
@@ -17,7 +18,7 @@ def human_controller(state: GameState) -> tuple[int, int]:
 
 
 def make_ai_controller(
-    player_id: int, parallel_mode: str = "none", n_workers: int = 1
+    player_id: int, parallel_mode: ParallelMode, n_workers: int = 1
 ) -> Callable[[GameState], tuple[int, int]]:
     """
     - Stateless: creates a new Agent instance every turn

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import argparse
 import multiprocessing
 import sys
@@ -8,9 +9,10 @@ from typing import Callable
 
 from settings import DEBUG_MODE
 from constants import PLAYER_1, PLAYER_2
+from src.parallel.mode import ParallelMode  # Enum import
+
 from ui.console_renderer import BLACK_CHAR, WHITE_CHAR, ConsoleRenderer
 from game.gamestate import GameState
-
 from controllers import (
     human_controller,
     make_ai_controller,
@@ -67,11 +69,13 @@ def play_game(
 # ------------------------------------------------------------------ #
 
 
-def play_human_vs_ai(parallel_mode: str, n_workers: int) -> None:
-    play_game(human_controller, make_ai_controller(PLAYER_2, parallel_mode, n_workers))
+def play_human_vs_ai(parallel_mode: ParallelMode, n_workers: int) -> None:
+    play_game(
+        human_controller, make_ai_controller(PLAYER_2, parallel_mode, n_workers)
+    )
 
 
-def play_ai_vs_ai(parallel_mode: str, n_workers: int) -> None:
+def play_ai_vs_ai(parallel_mode: ParallelMode, n_workers: int) -> None:
     play_game(
         make_ai_controller(PLAYER_1, parallel_mode, n_workers),
         make_ai_controller(PLAYER_2, parallel_mode, n_workers),
@@ -87,8 +91,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Quarto 게임 병렬 모드 설정")
     parser.add_argument(
         "--parallel",
-        choices=["none", "tree", "root"],
-        default="none",
+        type=ParallelMode,  # Enum 타입으로 바로 파싱
+        choices=list(ParallelMode),
+        default=ParallelMode.NONE,
         help="none (default), tree (tree parallel), root (root parallel)",
     )
     parser.add_argument(
@@ -97,10 +102,7 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="The number of worker (core)",
     )
-    args = parser.parse_args()
-    if args.parallel not in ("none", "tree", "root"):
-        parser.error("Wrong parallel mode")
-    return args
+    return parser.parse_args()
 
 
 # ------------------------------------------------------------------ #

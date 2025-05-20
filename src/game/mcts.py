@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
 import math
-import multiprocessing
 import random
 import time
 
@@ -17,60 +15,6 @@ K_PB = 50  # bias-decay constant
 K_BLEND = 3
 
 
-# n_visit만 쓸 경우 해당 값만 반환해도 무방
-# 우선 범용적으로 reward까지 함께 반환
-def _parallel_worker(state: GameState, n_iteration: int, time_limit: float):
-    tree = MCTree(time_limit, n_iteration)
-    tree.run(state)
-    return {
-        child.move: (child.n_visit, child.total_reward) for child in tree.root.children
-    }
-
-
-def run_root_parallel(
-    state: GameState, n_workers: int, n_iteration: int, time_limit: float
-) -> tuple[int, int]:
-
-    args = [(state.clone(), n_iteration, time_limit) for _ in range(n_workers)]
-    with multiprocessing.Pool(n_workers) as pool:
-        results = pool.starmap(_parallel_worker, args)
-
-    # cumulative = { key: move / value: (n_visit, total_reward) }
-    cum = {}
-    for result in results:
-        for move, (n, r) in result.items():
-            cum_v, cum_r = cum.get(move, (0, 0.0))
-            cum[move] = (cum_v + n, cum_r + r)
-
-    # Return move of 'the most visited node'
-    best_move, (best_v, best_r) = max(cum.items(), key=lambda item: item[1][0])
-    return best_move
-
-
-def run_tree_parallel(
-    state: GameState,
-    n_workers: int,
-    n_iteration: int,
-    time_limit: float,
-) -> tuple[int, int]:
-    
-    tree = MCTree(time_limit, n_iteration)
-    tree.root = Node(state)
-
-    start_time = time.time()
-    def worker():
-        while tree.root.n_visit < n_iteration and time.time() - start_time < time_limit:
-            tree.run_iteration()
-
-    with ThreadPoolExecutor(max_workers=n_workers) as pool:
-        futures = [pool.submit(worker) for _ in range(n_workers)]
-        for f in futures:
-            f.result()
-
-    best_move = tree.root.most_visited_child().move
-    assert best_move is not None
-    return best_move
-
 class MCTree:
     root: Node
     time_limit: float
@@ -82,32 +26,23 @@ class MCTree:
         self.n_iteration = n_iteration
         self.heuristic = ClassicHeuristic()
 
-    def run(self, state: GameState) -> tuple[int, int]:
-        self.root = Node(state)  # root is the current game state
-        start_time = time.time()
+    def run_single_thread(self, state: GameState) -> tuple[int, int]:
+        self.root = Node(state)
+        start = time.time()
         i = 0
 
-        while (i < self.n_iteration) and (time.time() - start_time < self.time_limit):
-            selected, is_terminal = self.select(self.root)
-
-            if is_terminal:
-                reward = self.terminal_value(selected.state)
-                self.backpropagate(selected, reward)
-            else:
-                expanded = selected.expand()
-                reward = self.blended_evaluation(
-                    expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND
-                )
-                self.backpropagate(expanded, reward)
+        while i < self.n_iteration and time.time() - start < self.time_limit:
+            self.do_iteration()
             i += 1
 
         if DEBUG_MODE:
             print(f"iteration 횟수: {i}")
-        best_move = self.root.most_visited_child().move
-        assert best_move != None
-        return best_move
 
-    def run_iteration(self):
+        best_child = self.root.most_visited_child()
+        assert best_child is not None
+        return best_child.move
+
+    def do_iteration(self):
         selected, is_terminal = self.select(self.root)
         if is_terminal:
             reward = self.terminal_value(selected.state)
