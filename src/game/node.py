@@ -9,6 +9,7 @@ from typing import Optional
 from constants import EPSILON
 from game.gamestate import GameState
 from game.heuristic import ClassicHeuristic
+from src.settings import BOARD_LENGTH
 
 
 class Node:
@@ -46,7 +47,7 @@ class Node:
 
     def expand(self) -> "Node":
         tried = {c.move for c in self.children}
-        untried = [m for m in self.state.legal_moves() if m not in tried]
+        untried = [m for m in self.state.legal_moves(radius=BOARD_LENGTH) if m not in tried]
         if not untried:
             raise RuntimeError("expand on fully-expanded node")
 
@@ -72,7 +73,7 @@ class Node:
         return random.choice(best_nodes)
 
     def is_fully_expanded(self) -> bool:
-        return len(self.children) == len(self.state.legal_moves())
+        return len(self.children) == len(self.state.legal_moves(radius=BOARD_LENGTH))
 
     def most_visited_child(self) -> Node:
         return max(self.children, key=lambda ch: ch.n_visit)

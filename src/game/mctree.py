@@ -8,7 +8,7 @@ from constants import PLAYER_1, PLAYER_2
 from game.gamestate import GameState
 from game.heuristic import ClassicHeuristic, Heuristic
 from game.node import Node
-from settings import DEBUG_MODE, MAX_DEPTH, N_ROLLOUT
+from settings import BOARD_LENGTH, DEBUG_MODE, MAX_DEPTH, N_ROLLOUT
 
 C = math.sqrt(2)  # exploration constant (tune if necessary)
 K_PB = 50  # bias-decay constant
@@ -73,6 +73,11 @@ class MCTree:
         rollout_val = self.rollout_average(state, n_rollout, max_depth)
         heuristic_val = self.heuristic.evaluate(state, state.current_player)
 
+        if abs(rollout_val) > 1e8:
+            return rollout_val
+        if abs(heuristic_val) > 1e8:
+            return heuristic_val
+
         alpha = k / (k + n_rollout)
         return (1 - alpha) * rollout_val + alpha * heuristic_val
 
@@ -96,16 +101,19 @@ class MCTree:
 
     def rollout(self, start: GameState, max_depth: int) -> float:
         state = start.clone()
-        for _ in range(max_depth):
+        for step in range(max_depth):
             if state.is_terminal:
                 break
-            move = random.choice(state.legal_moves())
-            state.apply_move(move)
+            if step < 2:
+                moves = state.legal_moves(radius=BOARD_LENGTH)
+            else:
+                moves = state.legal_moves(radius=3)
+            state.apply_move(random.choice(moves))
             state.current_player = (
                 PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
-            )
-            # if DEBUG_MODE:
-            #     state.print_board()
+        )
+        # if DEBUG_MODE:
+        #     state.print_board()
         return self.heuristic.evaluate(state, state.current_player)
 
     @staticmethod

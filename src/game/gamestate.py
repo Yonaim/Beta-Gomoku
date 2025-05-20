@@ -31,12 +31,33 @@ class GameState:
     #                   			interface                               #
     # --------------------------------------------------------------------- #
 
-    def legal_moves(self) -> list[tuple[int, int]]:
-        return [
-            (i % BOARD_LENGTH, i // BOARD_LENGTH)
-            for i in range(BOARD_N_BITS)
-            if not (self.occupy_bitset >> i) & 1
-        ]
+    # only around of last move (optimization)
+    def legal_moves(self, radius: int = 1) -> list[tuple[int, int]]:
+        if self.last_move == (-1, -1) or radius == BOARD_LENGTH:
+            return [
+                (i % BOARD_LENGTH, i // BOARD_LENGTH)
+                for i in range(BOARD_N_BITS)
+                if not (self.occupy_bitset >> i) & 1
+            ]
+
+        lx, ly = self.last_move
+        moves = set()
+        for dx in range(-radius, radius + 1):
+            for dy in range(-radius, radius + 1):
+                if dx == 0 and dy == 0:
+                    continue
+                nx, ny = lx + dx, ly + dy
+                if 0 <= nx < BOARD_LENGTH and 0 <= ny < BOARD_LENGTH:
+                    if self._is_empty(nx, ny):
+                        moves.add((nx, ny))
+        if moves:
+            return list(moves)
+        else:
+            return [
+                (i % BOARD_LENGTH, i // BOARD_LENGTH)
+                for i in range(BOARD_N_BITS)
+                if not (self.occupy_bitset >> i) & 1
+            ]
 
     def apply_move(self, move: tuple[int, int]):
         x, y = move
