@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import math
 import multiprocessing
 import random
@@ -46,9 +47,29 @@ def run_root_parallel(
     return best_move
 
 
-def run_tree_parallel() -> tuple[int, int]:
-    return (0, 0)
+def run_tree_parallel(
+    state: GameState,
+    n_workers: int,
+    n_iteration: int,
+    time_limit: float,
+) -> tuple[int, int]:
+    
+    tree = MCTree(time_limit, n_iteration)
+    tree.root = Node(state)
 
+    start_time = time.time()
+    def worker():
+        while tree.root.n_visit < n_iteration and time.time() - start_time < time_limit:
+            tree.run_iteration()
+
+    with ThreadPoolExecutor(max_workers=n_workers) as pool:
+        futures = [pool.submit(worker) for _ in range(n_workers)]
+        for f in futures:
+            f.result()
+
+    best_move = tree.root.most_visited_child().move
+    assert best_move is not None
+    return best_move
 
 class MCTree:
     root: Node
@@ -86,6 +107,18 @@ class MCTree:
         assert best_move != None
         return best_move
 
+    def run_iteration(self):
+        selected, is_terminal = self.select(self.root)
+        if is_terminal:
+            reward = self.terminal_value(selected.state)
+            self.backpropagate(selected, reward)
+        else:
+            expanded = selected.expand()
+            reward = self.blended_evaluation(
+                expanded.state, N_ROLLOUT, MAX_DEPTH, K_BLEND
+            )
+            self.backpropagate(expanded, reward)
+
     def select(self, node: Node) -> tuple[Node, bool]:
         while True:
             if node.state.is_terminal:
@@ -108,8 +141,7 @@ class MCTree:
     def backpropagate(self, node: Node | None, reward: float):
         cur_reward = reward
         while node is not None:
-            node.n_visit += 1
-            node.total_reward += cur_reward
+            node.update(reward)
             cur_reward = -cur_reward
             node = node.parent
 

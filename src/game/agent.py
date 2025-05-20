@@ -27,7 +27,9 @@ class Agent:
                 state, self.n_workers, self.n_iteration, self.time_limit
             )
         elif self.parallel_mode == "tree":
-            move = run_tree_parallel()
+            move = run_tree_parallel(
+                state, self.n_workers, self.n_iteration, self.time_limit
+            )
         else:
             move = self.mct.run(state)
         return move
