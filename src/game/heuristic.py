@@ -19,7 +19,7 @@ class ClassicHeuristic(Heuristic):
     - 방향 별로 visited bitset 존재하며, 같은 방향에서 같은 stone은 다시 세지 않음
     - Return value: [-1, 1]
     """
-    
+
     # weight values of three cases: (open, half-open, blocked)
     WEIGHTS = {
         5: (10_000_000, 10_000_000, 10_000_000),
@@ -28,6 +28,7 @@ class ClassicHeuristic(Heuristic):
         2: (300, 30, 5),
         1: (1, 1, 1),
     }
+
 
     def evaluate(self, state: GameState, player: int) -> float:
         my_score, opp_score = 0.0, 0.0
@@ -50,8 +51,11 @@ class ClassicHeuristic(Heuristic):
                 )
 
                 visited[dir_idx] |= line_bits
+
+                # early return
                 if length >= WIN_STONE_CNT:
-                    return 1.0 if stone_color == player else -1.0
+                    return 1e9 if stone_color == player else -1e9
+
                 weight_tuple = self.WEIGHTS.get(length, (0, 0, 0))
                 open_cnt = (left_open, right_open).count(True)
                 score = weight_tuple[2 - open_cnt]
@@ -59,12 +63,16 @@ class ClassicHeuristic(Heuristic):
                 if stone_color == player:
                     my_score += score
                 else:
-                    opp_score += score
+                    # open 3
+                    if length == 3 and open_cnt == 2:
+                        opp_score += score * 10
+                    # half-open 4
+                    elif length == 4 and open_cnt == 1:
+                        opp_score += score * 3
+                    else:
+                        opp_score += score
 
-        total = my_score + opp_score
-        if total == 0:
-            return 0.0
-        return (my_score - opp_score) / total
+        return my_score - opp_score
 
     # --------------------------------------------------------------------- #
     #                   			internal                                #
