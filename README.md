@@ -21,8 +21,11 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-make run    # single Thread
-make root   # root parallelization
+make run     # single thread
+make help    # help
+make root    # root parallelization
+make tree    # tree parallelization
+make profile # benchmark
 ```
 ## License
 
