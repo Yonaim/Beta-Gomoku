@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import copy
+from dataclasses import dataclass
 from typing import Optional
 
 from constants import DIRS, BLACK, WIN_STONE_CNT
@@ -11,21 +11,14 @@ from ui.console_renderer import ConsoleRenderer
 BOARD_N_BITS = BOARD_LENGTH * BOARD_LENGTH
 
 
+@dataclass(slots=True)
 class GameState:
-    occupy_bitset: int
-    color_bitset: int
     current_player: int
-    last_move: tuple[int, int]
-    is_terminal: bool
-    winner: int
-
-    def __init__(self, current_player: int):
-        self.color_bitset = 0
-        self.occupy_bitset = 0
-        self.current_player = current_player
-        self.last_move = (-1, -1)
-        self.is_terminal = False
-        self.winner = -1
+    color_bitset: int = 0
+    occupy_bitset: int = 0
+    last_move: tuple[int, int] = (-1, -1)
+    is_terminal: bool = False
+    winner: int = -1
 
     # --------------------------------------------------------------------- #
     #                   			interface                               #
@@ -41,23 +34,24 @@ class GameState:
             ]
 
         lx, ly = self.last_move
-        moves = set()
+        moves = []
         for dx in range(-radius, radius + 1):
+            nx = lx + dx
+            if nx < 0 or nx >= BOARD_LENGTH:
+                continue
             for dy in range(-radius, radius + 1):
                 if dx == 0 and dy == 0:
                     continue
-                nx, ny = lx + dx, ly + dy
-                if 0 <= nx < BOARD_LENGTH and 0 <= ny < BOARD_LENGTH:
-                    if self._is_empty(nx, ny):
-                        moves.add((nx, ny))
+                ny = ly + dy
+                if 0 <= ny < BOARD_LENGTH and self._is_empty(nx, ny):
+                    moves.append((nx, ny))
         if moves:
-            return list(moves)
-        else:
-            return [
-                (i % BOARD_LENGTH, i // BOARD_LENGTH)
-                for i in range(BOARD_N_BITS)
-                if not (self.occupy_bitset >> i) & 1
-            ]
+            return moves
+        return [
+            (i % BOARD_LENGTH, i // BOARD_LENGTH)
+            for i in range(BOARD_N_BITS)
+            if not (self.occupy_bitset >> i) & 1
+        ]
 
     def apply_move(self, move: tuple[int, int]):
         x, y = move
@@ -72,7 +66,14 @@ class GameState:
         self._check_terminal()
 
     def clone(self) -> GameState:
-        return copy.deepcopy(self)
+        return GameState(
+            current_player=self.current_player,
+            color_bitset=self.color_bitset,
+            occupy_bitset=self.occupy_bitset,
+            last_move=self.last_move,
+            is_terminal=self.is_terminal,
+            winner=self.winner,
+        )
 
     # for debug
     def print_board(self) -> None:
