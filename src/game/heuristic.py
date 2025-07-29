@@ -1,9 +1,10 @@
-import numpy as np
 
 from constants import DIRS, WIN_STONE_CNT
 from game.gamestate import BOARD_N_BITS, GameState
 from settings import BOARD_LENGTH
 from src.game.bitset import bit, idx
+
+CENTER_WEIGHT = 5  # bonus weight for central positions
 
 # weight values of three cases: (open, half-open, blocked)
 CLASSIC_HEURISTIC_WEIGHTS = {
@@ -17,6 +18,7 @@ CLASSIC_HEURISTIC_WEIGHTS = {
 
 def heuristic_evaluate(state: GameState, player: int) -> float:
     my_score, opp_score = 0.0, 0.0
+    center = BOARD_LENGTH // 2
     visited: list[int] = [0] * len(DIRS)
 
     occ = state.occupy_bitset
@@ -26,6 +28,13 @@ def heuristic_evaluate(state: GameState, player: int) -> float:
 
         x, y = i % BOARD_LENGTH, i // BOARD_LENGTH
         stone_color = bit(state.color_bitset, x, y)
+
+        dist = abs(x - center) + abs(y - center)
+        center_bonus = CENTER_WEIGHT * (BOARD_LENGTH - dist)
+        if stone_color == player:
+            my_score += center_bonus
+        else:
+            opp_score += center_bonus
 
         for dir_idx, (dx, dy) in enumerate(DIRS):
             if (visited[dir_idx] >> i) & 1:
@@ -42,7 +51,7 @@ def heuristic_evaluate(state: GameState, player: int) -> float:
                 return 1e9 if stone_color == player else -1e9
 
             weight_tuple = CLASSIC_HEURISTIC_WEIGHTS.get(length, (0, 0, 0))
-            open_cnt = (left_open, right_open).count(True)
+            open_cnt = int(left_open) + int(right_open)
             score = weight_tuple[2 - open_cnt]
 
             if stone_color == player:

@@ -13,14 +13,24 @@ from src.settings import BOARD_LENGTH
 
 
 class Node:
+    __slots__ = (
+        "state",
+        "move",
+        "parent",
+        "children",
+        "total_reward",
+        "n_visit",
+        "heuristic",
+        "_lock",
+    )
+
     state: GameState
     move: tuple[int, int]
-    parent: Node | None
-    children: list[Node]
+    parent: "Node | None"
+    children: list["Node"]
     total_reward: float
     n_visit: int
     heuristic: float
-    thread_safe: bool
 
     def __init__(
         self,

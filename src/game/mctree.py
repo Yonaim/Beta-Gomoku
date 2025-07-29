@@ -7,7 +7,13 @@ import time
 from constants import PLAYER_1, PLAYER_2
 from game.gamestate import GameState
 from game.node import Node
-from settings import BOARD_LENGTH, DEBUG_MODE, MAX_DEPTH, N_ROLLOUT
+from settings import (
+    BOARD_LENGTH,
+    DEBUG_MODE,
+    MAX_DEPTH,
+    N_ROLLOUT,
+    ROLLOUT_SAMPLE_SIZE,
+)
 from game.heuristic import heuristic_evaluate
 
 C = math.sqrt(2)  # exploration constant (tune if necessary)
@@ -106,7 +112,25 @@ class MCTree:
                 moves = state.legal_moves(radius=BOARD_LENGTH)
             else:
                 moves = state.legal_moves(radius=3)
-            state.apply_move(random.choice(moves))
+
+            sample = (
+                moves
+                if len(moves) <= ROLLOUT_SAMPLE_SIZE
+                else random.sample(moves, ROLLOUT_SAMPLE_SIZE)
+            )
+
+            best_move = None
+            best_score = -float("inf")
+            player = state.current_player
+            for mv in sample:
+                s = state.clone()
+                s.apply_move(mv)
+                sc = heuristic_evaluate(s, player)
+                if sc > best_score:
+                    best_score = sc
+                    best_move = mv
+
+            state.apply_move(best_move)
             state.current_player = (
                 PLAYER_2 if state.current_player == PLAYER_1 else PLAYER_1
             )
