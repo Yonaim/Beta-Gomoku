@@ -15,6 +15,15 @@ CLASSIC_HEURISTIC_WEIGHTS = {
     1: (1, 1, 1),
 }
 
+# additional multipliers for particularly dangerous opponent patterns
+# key: (length_of_line, number_of_open_ends)
+# These multipliers increase the penalty for situations that should be
+# blocked immediately, such as an opponent having an open three.
+DANGEROUS_MULTIPLIER = {
+    (3, 2): 20,  # open three
+    (4, 1): 5,   # half-open four
+}
+
 
 def heuristic_evaluate(state: GameState, player: int) -> float:
     my_score, opp_score = 0.0, 0.0
@@ -57,14 +66,8 @@ def heuristic_evaluate(state: GameState, player: int) -> float:
             if stone_color == player:
                 my_score += score
             else:
-                # open 3
-                if length == 3 and open_cnt == 2:
-                    opp_score += score * 10
-                # half-open 4
-                elif length == 4 and open_cnt == 1:
-                    opp_score += score * 3
-                else:
-                    opp_score += score
+                multiplier = DANGEROUS_MULTIPLIER.get((length, open_cnt), 1)
+                opp_score += score * multiplier
 
     return my_score - opp_score
 
